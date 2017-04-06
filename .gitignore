@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+esreg.Rproj
+README.Rmd
+src/*.o
+src/*.so
+src/*.dll
