@@ -3,11 +3,12 @@ Type: Package
 Title: Joint (VaR, ES) Regression
 Version: 0.1.2
 Date: 2017-03-31
-Authors@R: c(person('Sebastian', 'Bayer', email='sebatian.bayer@uni-konstanz.de', role=c('aut', 'cre')), person('Timo', 'Dimitriadis', role='aut'))
-Description: Linear regression modeling for the pair (VaR, ES).
+Authors@R: c(person('Sebastian', 'Bayer', email='sebatian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
+             person('Timo', 'Dimitriadis', role='aut'))
+Description: Simultaneous modeling of the quantile and the Expected Shortfall of a response variable given a set of covariates.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: Rcpp (>= 0.12.9), quantreg, GenSA, maxLik, boot, stats, utils
+Imports: stats, utils, Rcpp, quantreg, GenSA, maxLik, SparseM, MatrixModels
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.0.1
