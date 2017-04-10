@@ -12,8 +12,8 @@
 #' @param gensa_ctrl Parameters to be passed to GenSA
 #' @export
 esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho", method = "random_restart",
-                  random_restart_ctrl = list(M = 10, N = 10000, sd = sqrt(0.1)),
-                  gensa_ctrl = list(max.call = 1e+06, max.time = 5, box = 10)) {
+                  random_restart_ctrl = list(M = 10, N = 1000, sd = sqrt(0.1)),
+                  gensa_ctrl = list(max.call = 1e+06, max.time = 10, box = 10)) {
 
   # Check the inputs
   if (!(g1 %in% c(1, 2)))
@@ -104,7 +104,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
       set.seed(1)
       fit <- GenSA::GenSA(par = b0, fn = fun2,
                           lower = b0 - rep(gensa_ctrl$box, 2 * k),
-                          upper = rep(gensa_ctrl$box, 2 * k),
+                          upper = b0 + rep(gensa_ctrl$box, 2 * k),
                           control = gensa_ctrl[!(names(gensa_ctrl) %in% c("box"))])
     }
   }
