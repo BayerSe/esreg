@@ -33,4 +33,5 @@ Examples
 References
 ----------
 
-TBA
+[A Joint Quantile and Expected Shortfall Regression
+Framework](https://arxiv.org/abs/1704.02213)
