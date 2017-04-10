@@ -33,6 +33,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   # Extract the formula
   if (missing(data))
     data <- environment(formula)
+  cl <- match.call()
   mf <- stats::model.frame(formula = formula, data = data)
   x <- stats::model.matrix(attr(mf, "terms"), data = mf)
   y <- stats::model.response(mf)
@@ -123,7 +124,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   }
 
   # Return results
-  structure(list(target = target, method = method, g1 = g1, g2 = g2,
+  structure(list(call = cl, target = target, method = method, g1 = g1, g2 = g2,
                  alpha = alpha, y = y, x = x, b0 = b0,
                  par = b, par_q = b[1:k], par_e = b[(k + 1):(2 * k)],
                  value = fit$value, time = Sys.time() - t0),
@@ -142,6 +143,8 @@ print.esreg <- function(x, ...) {
   cat("G2:    ", x$g2, "\n")
   cat("Value: ", x$value, "\n")
   cat("Time:  ", x$time, "\n\n")
+  cat("Call:\n")
+  cat(deparse(x$call), "\n\n")
   cat("Parameters:\n")
   print(x$par_q)
   print(x$par_e)
