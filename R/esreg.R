@@ -79,6 +79,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   # Optimize the model
   if (k == 1) {
     fit <- stats::optim(par = b0, fn = fun2, method = "Nelder-Mead", control = optim_ctrol)
+    method <- "direct_optimization"
   } else {
     if (method == "one_shot") {
       # Refine the shortfall starting values
