@@ -197,6 +197,16 @@ esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
   eps <- .Machine$double.eps^(2/3)
   n <- nrow(x)
   k <- ncol(x)
+  
+  # Check the methods in case of sample quantile / es
+  if ((k == 1) & sparsity != "iid") {
+    warning("Changed sparsity estimation to iid!")
+    sparsity <- "iid"
+  }
+  if ((k == 1) & cond_var != "nid") {
+    warning("Changed condittional truncated variance estimation to nid!")
+    cond_var <- "ind"
+  }
 
   # Transform the data and coefficients
   if (fit$g2 %in% c(1, 2, 3)) {
@@ -232,7 +242,7 @@ esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
       if (any(is.na(cv) | any(!is.finite(cv))))
         stop() else cv
     }, error = function(e) {
-      print("Using ind estimator")
+      warning(paste0("Can not fit ", cond_var, ", now using ind estimator!"))
       rep(stats::var(u[u <= 0]), n)
     })
   }
