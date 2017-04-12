@@ -102,10 +102,7 @@ conditional_truncated_variance <- function(y, x, approach) {
   if (scaling == "N") {
     beta <- -mu/s
     beta[beta < -30] <- -30
-    cv <- s^2 * sapply(1:length(beta), function(i) {
-      b <- beta[i]
-      (1 - b * stats::dnorm(b)/stats::pnorm(b) - (stats::dnorm(b)/stats::pnorm(b))^2)
-    })
+    cv <- s^2 * (1 - beta * stats::dnorm(beta)/stats::pnorm(beta) - (stats::dnorm(beta)/stats::pnorm(beta))^2)
   } else if (scaling == "t") {
     # Student-t log likelihood
     f <- function(b, y, x, z) {
@@ -140,17 +137,20 @@ conditional_truncated_variance <- function(y, x, approach) {
     mu <- mu_fun(x, b = b[1:k])
     s <- sigma_fun(z, b = b[(k + 1):(k + l)])
     df <- utils::tail(b, 1)
-    s <- s * sqrt(df/(df - 2))
+    s <- s * sqrt(df/(df - 2))  # Transform back to the standard deviation
 
-    beta <- -mu/(sqrt((df - 2)/df) * s)
+    # See Ho et al. (2012): Some results on the truncated multivariate t distribution
+    t1 <- (df-2)/df
+    beta <- -mu/(sqrt(t1) * s)
     beta[beta < -30] <- -30
-    cv <- (df - 2)/df * s^2 * sapply(1:length(beta), function(i) {
-      b <- beta[i]
-      dtt <- function(x, b, df) stats::dt(x, df = df)/stats::pt(b, df = df)
-      m1 <- stats::integrate(function(x) x * dtt(x, b, df), lower = -Inf, upper = b)$value
-      m2 <- stats::integrate(function(x) x^2 * dtt(x, b, df), lower = -Inf, upper = b)$value
-      m2 - m1^2
-    })
+    if (df < 300) {
+      k <- gamma((df+1)/2) / gamma(df/2) / sqrt(df*pi) / pt(beta, df=df)
+    } else {
+      k <- sqrt(df/2) / sqrt(df*pi) / pt(beta, df=df)
+    }
+    m1 <- k*df / (df-1) * (-(1+beta^2/df)^(-(df-1)/2))
+    m2 <- (df-1)/t1 * (pt(beta*sqrt(t1), df=df-2) / pt(beta, df=df)) - df
+    cv <- t1 * s^2 * (m2 - m1^2)
   }
 
   # Return
@@ -197,13 +197,13 @@ esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
   eps <- .Machine$double.eps^(2/3)
   n <- nrow(x)
   k <- ncol(x)
-  
+
   # Check the methods in case of sample quantile / es
   if ((k == 1) & sparsity != "iid") {
     warning("Changed sparsity estimation to iid!")
     sparsity <- "iid"
   }
-  if ((k == 1) & cond_var != "nid") {
+  if ((k == 1) & cond_var != "ind") {
     warning("Changed condittional truncated variance estimation to nid!")
     cond_var <- "ind"
   }
