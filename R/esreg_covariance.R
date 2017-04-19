@@ -30,45 +30,23 @@ bandwidth <- function(n, alpha, tau = 0.05, type = "Hall-Sheather") {
 #' @export
 conditional_truncated_variance <- function(y, x, approach) {
 
-  # Disentangle the approach
-  scaling <- substr(strsplit(approach, "_")[[1]][2], 1, 1)
-  sigma_form <- strsplit(approach, "_")[[1]][3]
-  if (is.na((sigma_form)))
-    sigma_form <- "lin"
+  # Some variables
+  z <- x  # Variables relevant for the standard deviation
+  n <- nrow(x)
+  k <- ncol(x)
+  l <- ncol(z)
+  scaling <- strsplit(approach, "_")[[1]][2]
 
   # Mean / standard deviation specifications
   mu_fun <- function(x, b) as.numeric(x %*% b)
-  if (sigma_form %in% c("lin", "poly")) {
-    sigma_fun <- function(x, b) as.numeric(x %*% b)
-  } else if (sigma_form == "exp") {
-    sigma_fun <- function(x, b) b[1] + exp(as.numeric(x %*% b[-1]))
-  }
-
-  # Some variables
-  if (sigma_form == "poly") {
-    z <- cbind(1, stats::poly(x[, -1], degree = 2, raw = FALSE, simple = TRUE))
-    l <- ncol(z)
-  } else if (sigma_form == "exp") {
-    z <- x
-    l <- ncol(z) + 1  # correct for the additonal intercept
-  } else {
-    z <- x
-    l <- ncol(z)
-  }
-  n <- nrow(x)
-  k <- ncol(x)
-
-  # MLE settings
-  ctrl <- list(iterlim = 1000)
-
-  ### Estimate the model under normality
+  sigma_fun <- function(x, b) as.numeric(x %*% b)
 
   # Normal log-likelihood
   f <- function(b, y, x, z) {
     mu <- mu_fun(x, b = b[1:k])
-    s <- sigma_fun(z, b = b[(k + 1):(k + l)])
-    if (all(s > 0)) {
-      stats::dnorm(y, mean = mu, sd = s, log = TRUE)
+    sigma <- sigma_fun(z, b = b[(k + 1):(k + l)])
+    if (all(sigma > 0)) {
+      stats::dnorm(y, mean = mu, sd = sigma, log = TRUE)
     } else {
       rep(NA, n)
     }
@@ -76,18 +54,15 @@ conditional_truncated_variance <- function(y, x, approach) {
 
   # Starting values (and ensure positive fitted standard deviations)
   fit1 <- stats::lm(y ~ x - 1)
-  if (sigma_form %in% c("lin", "poly")) {
-    fit2 <- stats::lm(abs(fit1$residuals) ~ z - 1)
-    fit2$coefficients[1] <- fit2$coefficients[1] - min(0.001, min(fit2$fitted.values))
-    b0 <- c(fit1$coefficients, fit2$coefficients)
-  } else if (sigma_form == "exp") {
-    b0 <- c(fit1$coefficients, mean(fit1$residuals^2), rep(0, l - 1))
-  }
+  fit2 <- stats::lm(abs(fit1$residuals) ~ z - 1)
+  fit2$coefficients[1] <- fit2$coefficients[1] - min(0.001, min(fit2$fitted.values))
+  b0 <- c(fit1$coefficients, fit2$coefficients)
 
   # Optimize the model
   fit <- NULL
   for (method in c("BFGS", "BHHH", "NM")) {
-    fit <- try(maxLik::maxLik(f, start = b0, y = y, x = x, z = z, method = method, control = ctrl), silent = TRUE)
+    fit <- try(maxLik::maxLik(f, start = b0, y = y, x = x, z = z, method = method,
+                              control = list(iterlim = 1000)), silent = TRUE)
     if (inherits(fit, "maxLik"))
       if (fit$code == 0)
         break
@@ -96,37 +71,38 @@ conditional_truncated_variance <- function(y, x, approach) {
   # Fitted values
   b <- fit$estimate
   mu <- mu_fun(x, b = b[1:k])
-  s <- sigma_fun(z, b = b[(k + 1):(k + l)])
+  sigma <- sigma_fun(z, b = b[(k + 1):(k + l)])
 
-  ### Refinements and Truncation
+  # Refinements and Truncation
   if (scaling == "N") {
-    beta <- -mu/s
+    beta <- -mu / sigma
     beta[beta < -30] <- -30
-    cv <- s^2 * (1 - beta * stats::dnorm(beta)/stats::pnorm(beta) - (stats::dnorm(beta)/stats::pnorm(beta))^2)
+    cv <- sigma^2 * (1 - beta * stats::dnorm(beta)/stats::pnorm(beta) - (stats::dnorm(beta)/stats::pnorm(beta))^2)
   } else if (scaling == "t") {
     # Student-t log likelihood
     f <- function(b, y, x, z) {
       mu <- mu_fun(x, b = b[1:k])
-      s <- sigma_fun(z, b = b[(k + 1):(k + l)])
+      sigma <- sigma_fun(z, b = b[(k + 1):(k + l)])
       df <- utils::tail(b, 1)
-      if (all(s > 0) & (df > 2.1)) {
-        lgamma((df + 1)/2) - lgamma(df/2) - log(sqrt(pi * df) * s) - (df + 1)/2 * log((1 + 1/df * ((y - mu)/s)^2))
+      if (all(sigma > 0) & (df > 2.1)) {
+        lgamma((df + 1)/2) - lgamma(df/2) - log(sqrt(pi * df) * sigma) - (df + 1)/2 * log((1 + 1/df * ((y - mu)/sigma)^2))
       } else {
         rep(NA, n)
       }
     }
 
-    # Estimate of the degrees of freedom
-    r <- (y - mu)/s
-    df <- stats::optimise(function(df, x = r, mu = 0, s = 1) {
-      s <- sqrt((df - 2)/df)  # Correct the standard deviation
-      -sum(lgamma((df + 1)/2) - lgamma(df/2) - log(sqrt(pi * df) * s) - (df + 1)/2 * log((1 + 1/df * ((x - mu)/s)^2)))
+    # Inital estimate of the degrees of freedom
+    r <- (y - mu) / sigma
+    df <- stats::optimise(function(df, x = r, mu = 0, sigma = 1) {
+      sigma <- sigma * sqrt((df - 2)/df)  # Correct the standard deviation
+      -sum(lgamma((df + 1)/2) - lgamma(df/2) - log(sqrt(pi * df) * sigma) - (df + 1)/2 * log((1 + 1/df * ((x - mu)/sigma)^2)))
     }, interval = c(2.1, 1e+06))$minimum
 
     # Estimate the full model
     fit <- NULL
     for (method in c("BFGS", "BHHH", "NM")) {
-      fit <- try(maxLik::maxLik(f, start = c(b, df), y = y, x = x, z = z, method = method, control = ctrl), silent = TRUE)
+      fit <- try(maxLik::maxLik(f, start = c(b, df), y = y, x = x, z = z, method = method,
+                                control = list(iterlim = 1000)), silent = TRUE)
       if (inherits(fit, "maxLik"))
         if (fit$code == 0)
           break
@@ -135,22 +111,22 @@ conditional_truncated_variance <- function(y, x, approach) {
     # Fitted values
     b <- fit$estimate
     mu <- mu_fun(x, b = b[1:k])
-    s <- sigma_fun(z, b = b[(k + 1):(k + l)])
+    sigma <- sigma_fun(z, b = b[(k + 1):(k + l)])
     df <- utils::tail(b, 1)
-    s <- s * sqrt(df/(df - 2))  # Transform back to the standard deviation
+    sigma <- sigma * sqrt(df/(df - 2))  # Transform back to the standard deviation
 
     # See Ho et al. (2012): Some results on the truncated multivariate t distribution
-    t1 <- (df-2)/df
-    beta <- -mu/(sqrt(t1) * s)
+    t1 <- (df - 2) / df
+    beta <- -mu / (sqrt(t1) * sigma)
     beta[beta < -30] <- -30
     if (df < 300) {
       k <- gamma((df+1)/2) / gamma(df/2) / sqrt(df*pi) / stats::pt(beta, df=df)
     } else {
       k <- sqrt(df/2) / sqrt(df*pi) / stats::pt(beta, df=df)
     }
-    m1 <- k*df / (df-1) * (-(1+beta^2/df)^(-(df-1)/2))
-    m2 <- (df-1)/t1 * (stats::pt(beta*sqrt(t1), df=df-2) / stats::pt(beta, df=df)) - df
-    cv <- t1 * s^2 * (m2 - m1^2)
+    m1 <- k * df / (df - 1) * (-(1+beta^2/df)^(-(df-1)/2))
+    m2 <- (df - 1) / t1 * (stats::pt(beta*sqrt(t1), df=df-2) / stats::pt(beta, df=df)) - df
+    cv <- t1 * sigma^2 * (m2 - m1^2)
   }
 
   # Return
