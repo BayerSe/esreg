@@ -144,12 +144,12 @@ conditional_truncated_variance <- function(y, x, approach) {
     beta <- -mu/(sqrt(t1) * s)
     beta[beta < -30] <- -30
     if (df < 300) {
-      k <- gamma((df+1)/2) / gamma(df/2) / sqrt(df*pi) / pt(beta, df=df)
+      k <- gamma((df+1)/2) / gamma(df/2) / sqrt(df*pi) / stats::pt(beta, df=df)
     } else {
-      k <- sqrt(df/2) / sqrt(df*pi) / pt(beta, df=df)
+      k <- sqrt(df/2) / sqrt(df*pi) / stats::pt(beta, df=df)
     }
     m1 <- k*df / (df-1) * (-(1+beta^2/df)^(-(df-1)/2))
-    m2 <- (df-1)/t1 * (pt(beta*sqrt(t1), df=df-2) / pt(beta, df=df)) - df
+    m2 <- (df-1)/t1 * (stats::pt(beta*sqrt(t1), df=df-2) / stats::pt(beta, df=df)) - df
     cv <- t1 * s^2 * (m2 - m1^2)
   }
 
