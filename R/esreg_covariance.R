@@ -271,21 +271,37 @@ esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
 
 #' Bootstrapped Covariance
 #'
-#' Estimate the variance-covariance matrix using the stationary block bootstrap
+#' Estimate the variance-covariance matrix via bootstrapping
 #'
 #' @param fit esreg object
-#' @param B bootstrap iterations
-#' @param block_length Length of each block, 1 corresponds to iid bootstrap
-#' @param method Same as for esreg(). Defaults to one_shot for speed.
+#' @param B Number of bootstrap iterations
+#' @param bootstrap_method iid or stationary
+#' @param block_length Average block length for the stationary bootstrap
 #' @references Politis & Romano (1994)
 #' @export
-esreg_covariance_boot <- function(fit, B = 1000, block_length = 1, method = "one_shot") {
-  set.seed(1)
-  boot <- boot::tsboot(tseries = cbind(fit$y, fit$x),
-                       statistic = function(z)
-                         esreg(z[, 1] ~ as.matrix(z[, -1]) - 1, alpha = fit$alpha,
-                               g1 = fit$g1, g2 = fit$g2, method = method)$par,
-                       R = B, sim = "geom",
-                       l = block_length)
-  stats::var(boot$t)
+esreg_covariance_boot <- function(fit, B = 1000, bootstrap_method = "iid", block_length = NULL) {
+
+  # Draw the bootstrap indices
+  n <- length(fit$y)
+  if (bootstrap_method == "iid") {
+    idx <- matrix(sample(1:n, size = n * B, replace = TRUE), nrow = n)
+  } else if (bootstrap_method == "stationary") {
+    if (is.null(block_length)) stop("No average block length provided!")
+    idx <- stationary_bootstrap_indices(n = n, avg_block_size = block_length, B = B)
+  } else {
+    stop("Not a valid bootstrap method")
+  }
+
+  # Estimate the model on the bootstraped data
+  # Use the one_shot estimation approach for speed
+  b <- apply(idx, 2, function(id) {
+    fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
+                  alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2, method = 'one_shot')
+    fitb$par
+  })
+
+  # Compute the covariance
+  cov <- stats::cov(b)
+
+  cov
 }

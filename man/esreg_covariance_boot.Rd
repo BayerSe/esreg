@@ -4,17 +4,17 @@
 \alias{esreg_covariance_boot}
 \title{Bootstrapped Covariance}
 \usage{
-esreg_covariance_boot(fit, B = 1000, block_length = 1,
-  method = "one_shot")
+esreg_covariance_boot(fit, B = 1000, bootstrap_method = "iid",
+  block_length = NULL)
 }
 \arguments{
 \item{fit}{esreg object}
 
-\item{B}{bootstrap iterations}
+\item{B}{Number of bootstrap iterations}
 
-\item{block_length}{Length of each block, 1 corresponds to iid bootstrap}
+\item{bootstrap_method}{iid or stationary}
 
-\item{method}{Same as for esreg(). Defaults to one_shot for speed.}
+\item{block_length}{Average block length for the stationary bootstrap}
 }
 \description{
 Estimate the variance-covariance matrix using the stationary block bootstrap

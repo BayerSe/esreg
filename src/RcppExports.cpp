@@ -25,6 +25,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// stationary_bootstrap_indices
+Rcpp::NumericMatrix stationary_bootstrap_indices(int n, double avg_block_size, int B);
+RcppExport SEXP esreg_stationary_bootstrap_indices(SEXP nSEXP, SEXP avg_block_sizeSEXP, SEXP BSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< double >::type avg_block_size(avg_block_sizeSEXP);
+    Rcpp::traits::input_parameter< int >::type B(BSEXP);
+    rcpp_result_gen = Rcpp::wrap(stationary_bootstrap_indices(n, avg_block_size, B));
+    return rcpp_result_gen;
+END_RCPP
+}
 // G1_fun
 double G1_fun(double z, int type);
 RcppExport SEXP esreg_G1_fun(SEXP zSEXP, SEXP typeSEXP) {

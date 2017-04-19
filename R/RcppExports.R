@@ -5,6 +5,10 @@ loop_esreg_covariance <- function(x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, de
     .Call('esreg_loop_esreg_covariance', PACKAGE = 'esreg', x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
 }
 
+stationary_bootstrap_indices <- function(n, avg_block_size, B) {
+    .Call('esreg_stationary_bootstrap_indices', PACKAGE = 'esreg', n, avg_block_size, B)
+}
+
 #' Specification Function: G1
 #'
 #' @param z Data
