@@ -5,9 +5,8 @@
 \title{Joint (VaR, ES) Regression}
 \usage{
 esreg(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho",
-  method = "random_restart", random_restart_ctrl = list(M = 10, N = 10000,
-  sd = sqrt(0.1)), gensa_ctrl = list(max.call = 1e+06, max.time = 5, box =
-  10))
+  method = "random_restart", random_restart_ctrl = list(M = 10, N = 1000, sd
+  = sqrt(0.1)), gensa_ctrl = list(max.call = 1e+06, max.time = 10, box = 10))
 }
 \arguments{
 \item{formula}{y ~ x1 + x2 + ...}
