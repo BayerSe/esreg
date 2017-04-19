@@ -17,7 +17,7 @@ esreg_covariance_boot(fit, B = 1000, bootstrap_method = "iid",
 \item{block_length}{Average block length for the stationary bootstrap}
 }
 \description{
-Estimate the variance-covariance matrix using the stationary block bootstrap
+Estimate the variance-covariance matrix via bootstrapping
 }
 \references{
 Politis & Romano (1994)
