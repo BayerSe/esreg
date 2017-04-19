@@ -277,7 +277,7 @@ esreg_covariance_boot <- function(fit, B = 1000, bootstrap_method = "iid", block
   })
 
   # Compute the covariance
-  cov <- stats::cov(b)
+  cov <- stats::cov(t(b))
 
   cov
 }
