@@ -3,7 +3,6 @@
 S3method(coef,esreg)
 S3method(fitted,esreg)
 S3method(print,esreg)
-S3method(vcov,esreg)
 export(G1_fun)
 export(G1_prime_fun)
 export(G2_curly_fun)

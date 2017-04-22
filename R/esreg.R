@@ -138,43 +138,25 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
             class = "esreg")
 }
 
-
-
-# Set some methods --------------------------------------------------------
-
 #' @export
 print.esreg <- function(x, ...) {
-  cat("Target:", x$target, "\n")
   cat("Method:", x$method, "\n")
-  cat("G1:    ", x$g1, "\n")
-  cat("G2:    ", x$g2, "\n")
-  cat("Value: ", x$value, "\n")
-  cat("Time:  ", x$time, "\n\n")
+  cat("Target:", x$target, "\n")
+  cat(.G_function_names(x$g1, x$g2)[1], "\n")
+  cat(.G_function_names(x$g1, x$g2)[2], "\n")
+  cat("Value: ", sprintf("%.9f", x$value), "\n")
+  cat("alpha: ", sprintf("%.3f", x$alpha), "\n")
+  cat("Time:  ", sprintf("%.3f", x$time), "\n\n")
   cat("Call:\n")
   cat(deparse(x$call), "\n\n")
-  cat("Parameters:\n")
-  print(x$par_q)
-  print(x$par_e)
+  cat("Estimates:\n")
+  cat(sprintf("% 0.4f", x$par_q), "\n")
+  cat(sprintf("% 0.4f", x$par_e))
 }
 
 #' @export
 coef.esreg <- function(object, ...) {
   object$par
-}
-
-
-#' Variance-Covariance Matrix
-#'
-#' @param object esreg object
-#' @param boot If TRUE, bootstrap the covariance; else use the asymptotic formulas
-#' @param ... other paramters passed to the low-level functions
-#' @export
-vcov.esreg <- function(object, boot = FALSE, ...) {
-  if (boot) {
-    esreg_covariance_boot(fit = object, ...)
-  } else {
-    esreg_covariance(fit = object, ...)
-  }
 }
 
 #' @export
