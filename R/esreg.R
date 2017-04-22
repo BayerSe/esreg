@@ -163,3 +163,76 @@ coef.esreg <- function(object, ...) {
 fitted.esreg <- function(object, ...) {
   cbind(object$x %*% object$par_q, object$x %*% object$par_e)
 }
+
+
+#' Two Step (VaR, ES) Regression
+#'
+#' Estimates the expected shortfall in two steps.
+#'
+#' This estimator is much faster than the
+#' one-step estimator \link{esreg}. Its estimates are, however,
+#' less precise and therefore \link{esreg} is geneally the preferred estimator.
+#'
+#' @param formula y ~ x1 + x2 + ...
+#' @param data data.frame that stores y and x. Extracted from the enviroment if missing.
+#' @param alpha Quantile index
+#' @export
+esreg_twostep <- function(formula, data, alpha) {
+
+  # Start the timer
+  t0 <- Sys.time()
+
+  # Extract the formula
+  if (missing(data))
+    data <- environment(formula)
+  cl <- match.call()
+  mf <- stats::model.frame(formula = formula, data = data)
+  x <- stats::model.matrix(attr(mf, "terms"), data = mf)
+  y <- stats::model.response(mf)
+
+  # Check the data
+  if (any(is.na(y)) | any(is.na(x)))
+    stop("Data contains NAs!")
+  if (!(all(is.finite(y)) & all(is.finite(x))))
+    stop("Not all values are finite!")
+
+  # First stage: quantile regression
+  fit_rq <- quantreg::rq(y ~ x-1, tau = alpha)
+  q <- fit_rq$fitted.values
+  b_q <- fit_rq$coefficients
+
+  # Second stage: weighted least squares regression
+  fit <- stats::lm(y ~ x-1, weights = (y <= q) * 1)
+  b_e <- fit$coefficients
+
+  # Name the coefficents
+  names(b_q) <- paste0("bq_", 1:length(b_q) - 1)
+  names(b_e) <- paste0("be_", 1:length(b_e) - 1)
+
+  # Return results
+  structure(list(call = cl, alpha = alpha, y = y, x = x,
+                 par = c(b_q, b_e), par_q = b_q, par_e = b_e,
+                 time = Sys.time() - t0),
+            class = "esreg_twostep")
+}
+
+#' @export
+print.esreg_twostep <- function(x, ...) {
+  cat("alpha: ", sprintf("%.3f", x$alpha), "\n")
+  cat("Time:  ", sprintf("%.3f", x$time), "\n\n")
+  cat("Call:\n")
+  cat(deparse(x$call), "\n\n")
+  cat("Estimates:\n")
+  cat(sprintf("% 0.4f", x$par_q), "\n")
+  cat(sprintf("% 0.4f", x$par_e))
+}
+
+#' @export
+coef.esreg_twostep <- function(object, ...) {
+  object$par
+}
+
+#' @export
+fitted.esreg_twostep <- function(object, ...) {
+  cbind(object$x %*% object$par_q, object$x %*% object$par_e)
+}
