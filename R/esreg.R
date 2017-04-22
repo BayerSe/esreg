@@ -38,6 +38,12 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   x <- stats::model.matrix(attr(mf, "terms"), data = mf)
   y <- stats::model.response(mf)
 
+  # Check the data
+  if (any(is.na(y)) | any(is.na(x)))
+    stop("Data contains NAs!")
+  if (!(all(is.finite(y)) & all(is.finite(x))))
+    stop("Not all values are finite!")
+
   # Set some variables
   k <- ncol(x)
   optim_ctrol <- list(maxit = 10000, reltol = .Machine$double.eps^(1/2))
