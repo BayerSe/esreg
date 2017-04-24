@@ -161,12 +161,22 @@ esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
   if (!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
     stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
 
-  # Extract some elements from the fit object and compute some things
+  # Extract some elements from the esreg fit object
   y <- fit$y
   x <- fit$x
   alpha <- fit$alpha
   par_q <- fit$par_q
   par_e <- fit$par_e
+
+  # Transform the data and coefficients
+  if (fit$g2 %in% c(1, 2, 3)) {
+    max_y <- max(y)
+    y <- y - max_y
+    par_q[1] <- par_q[1] - max_y
+    par_e[1] <- par_e[1] - max_y
+  }
+
+  # Precompute some quantities
   xq <- as.numeric(x %*% par_q)
   xe <- as.numeric(x %*% par_e)
   u <- as.numeric(y - xq)
@@ -182,14 +192,6 @@ esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
   if ((k == 1) & cond_var != "ind") {
     warning("Changed condittional truncated variance estimation to nid!")
     cond_var <- "ind"
-  }
-
-  # Transform the data and coefficients
-  if (fit$g2 %in% c(1, 2, 3)) {
-    max_y <- max(y)
-    y <- y - max_y
-    par_q[1] <- par_q[1] - max_y
-    par_e[1] <- par_e[1] - max_y
   }
 
   # Density quantile function
@@ -243,7 +245,6 @@ esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
     cov_matrix
   }
 }
-
 
 #' Bootstrapped Covariance
 #'
