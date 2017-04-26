@@ -29,6 +29,9 @@ bandwidth <- function(n, alpha, tau = 0.05, type = "Hall-Sheather") {
 #'
 #' @export
 conditional_truncated_variance <- function(y, x, approach) {
+  if (!("maxLik" %in% rownames(installed.packages()))) {
+    stop("maxLik needed for this function to work. Please install it.")
+  }
 
   # Some variables
   z <- x  # Variables relevant for the standard deviation
