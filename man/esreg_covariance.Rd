@@ -2,7 +2,7 @@
 % Please edit documentation in R/esreg_covariance.R
 \name{esreg_covariance}
 \alias{esreg_covariance}
-\title{Asymptotic covariance}
+\title{Estimated asymptotic covariance for the joint estimator}
 \usage{
 esreg_covariance(fit, sparsity = "iid", cond_var = "ind",
   bandwidth_type = "Hall-Sheather")
@@ -26,5 +26,5 @@ esreg_covariance(fit, sparsity = "iid", cond_var = "ind",
 \item{bandwidth_type}{Bofinger, Chamberlain or Hall-Sheather}
 }
 \description{
-Asymptotic covariance
+Estimated asymptotic covariance for the joint estimator
 }

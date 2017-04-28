@@ -6,9 +6,9 @@
 
 using namespace Rcpp;
 
-// loop_esreg_covariance
-Rcpp::List loop_esreg_covariance(arma::mat x, arma::colvec xq, arma::colvec xe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
-RcppExport SEXP esreg_loop_esreg_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
+// l_esreg_covariance
+arma::mat l_esreg_covariance(arma::mat x, arma::colvec xq, arma::colvec xe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
+RcppExport SEXP esreg_l_esreg_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,13 +21,13 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::colvec >::type density(densitySEXP);
     Rcpp::traits::input_parameter< arma::colvec >::type conditional_variance(conditional_varianceSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(loop_esreg_covariance(x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha));
+    rcpp_result_gen = Rcpp::wrap(l_esreg_covariance(x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha));
     return rcpp_result_gen;
 END_RCPP
 }
-// .esreg_twostep_covariance
-arma::mat .esreg_twostep_covariance(arma::mat x, arma::colvec xq, arma::colvec xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
-RcppExport SEXP esreg_.esreg_twostep_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
+// l_esreg_twostep_covariance
+arma::mat l_esreg_twostep_covariance(arma::mat x, arma::colvec xq, arma::colvec xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
+RcppExport SEXP esreg_l_esreg_twostep_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -37,7 +37,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::colvec >::type density(densitySEXP);
     Rcpp::traits::input_parameter< arma::colvec >::type conditional_variance(conditional_varianceSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(.esreg_twostep_covariance(x, xq, xe, density, conditional_variance, alpha));
+    rcpp_result_gen = Rcpp::wrap(l_esreg_twostep_covariance(x, xq, xe, density, conditional_variance, alpha));
     return rcpp_result_gen;
 END_RCPP
 }

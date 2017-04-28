@@ -137,7 +137,7 @@ conditional_truncated_variance <- function(y, x, approach) {
 }
 
 
-#' Asymptotic covariance
+#' Estimated asymptotic covariance for the joint estimator
 #'
 #' @param fit fit An object from calling esreg()
 #' @param sparsity Sparsity estimator
@@ -155,8 +155,8 @@ conditional_truncated_variance <- function(y, x, approach) {
 #' @export
 esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
                              bandwidth_type = "Hall-Sheather") {
-
-  # Check the inputs
+  if (!is(fit, "esreg"))
+    stop("This is not a esreg object!")
   if (!(sparsity %in% c("iid", "nid")))
     stop("sparsity can be iid or nid")
   if (!(cond_var %in% c('ind', 'scl_N', 'scl_t')))
@@ -233,20 +233,12 @@ esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
   G2_xe <- G_vec(z = xe, g = 'G2', type = fit$g2)
   G2_prime_xe <- G_vec(z = xe, g = 'G2_prime', type = fit$g2)
 
-  # Compute the covariance
-  loop <- loop_esreg_covariance(x = x, xq = xq, xe = xe, alpha = alpha,
-                                G1_prime_xq = G1_prime_xq,
-                                G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
-                                density = dens, conditional_variance = cv)
-
-  # Check if we can compute the covariance matrix, if not return NA matrix
-  cov_matrix <- suppressWarnings(try(solve(loop$lambda) %*% loop$C %*% solve(loop$lambda)))
-  if (class(cov_matrix) == "try-error") {
-    matrix(NA, 2 * k, 2 * k)
-  } else {
-    rownames(cov_matrix) <- colnames(cov_matrix) <- names(fit$par)
-    cov_matrix
-  }
+  # Compute and return the covariance matrix
+  cov <- l_esreg_covariance(x = x, xq = xq, xe = xe, alpha = alpha,
+                            G1_prime_xq = G1_prime_xq,
+                            G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
+                            density = dens, conditional_variance = cv)
+  cov
 }
 
 #' Bootstrapped Covariance
@@ -273,12 +265,19 @@ esreg_covariance_boot <- function(fit, B = 1000, bootstrap_method = "iid", block
   }
 
   # Estimate the model on the bootstraped data
-  # Use the one_shot estimation approach for speed
-  b <- apply(idx, 2, function(id) {
-    fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
-                  alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2, method = 'one_shot')
-    fitb$par
-  })
+  if (is(fit, "esreg")) {
+    # Use the one_shot estimation approach for speed
+    b <- apply(idx, 2, function(id) {
+      fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
+                    alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2, method = 'one_shot')
+      fitb$par
+    })
+  } else if (is(fit, "esreg_twostep")) {
+    b <- apply(idx, 2, function(id) {
+      fitb <- esreg_twostep(fit$y[id] ~ fit$x[id, -1], alpha = fit$alpha)
+      fitb$par
+    })
+  }
 
   # Compute the covariance
   cov <- stats::cov(t(b))
@@ -306,7 +305,7 @@ esreg_covariance_boot <- function(fit, B = 1000, bootstrap_method = "iid", block
 #' @export
 esreg_twostep_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
                                      bandwidth_type = "Hall-Sheather") {
-  if (class(fit) != 'esreg_twostep')
+  if (!is(fit, "esreg_twostep"))
     stop("This is not a esreg_twostep object!")
   if (!(sparsity %in% c("iid", "nid")))
     stop("sparsity can be iid or nid")
@@ -371,9 +370,12 @@ esreg_twostep_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
     })
   }
 
-  # Compute the covariance and return it
-  cov <- .esreg_twostep_covariance(x = x, xq = xq, xe = xe, alpha = alpha,
-                                   density = dens, conditional_variance = cv)
-  cov
+  # Compute and return the covariance matrix
+  cov <- l_esreg_twostep_covariance(x = x, xq = xq, xe = xe, alpha = alpha,
+                                    density = dens, conditional_variance = cv)
+
+  # Flip blockwise such that it matches the rest of the esreg package
+  cov <- rbind(cbind(cov[(k+1):(2*k), (k+1):(2*k)], cov[1:k, (k+1):(2*k)]),
+               cbind(cov[(k+1):(2*k), 1:k], cov[1:k, 1:k]))
 }
 
