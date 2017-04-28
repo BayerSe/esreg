@@ -1,5 +1,8 @@
+# 0.1.4
+Added an estimator of the asymptotic covariance of the two-step estimator
+
 # 0.1.3
-Added a (extremely fast but less precise) two stop estimator
+Added a (extremely fast but less precise) two-step estimator
 
 # 0.1.2
 Added new specification functions
