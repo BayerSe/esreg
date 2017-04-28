@@ -109,7 +109,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
       # Find the best fit
       fit <- fits[[which.min(sapply(fits, "[[", "value"))]]
     } else if (method == "gensa") {
-      if (!("GenSA" %in% rownames(installed.packages()))) {
+      if (!("GenSA" %in% rownames(utils::installed.packages()))) {
         stop("GenSA needed for this function to work. Please install it.")
       }
       set.seed(1)

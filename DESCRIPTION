@@ -9,6 +9,6 @@ Description: Simultaneous modeling of the quantile and the Expected Shortfall of
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: stats, utils, Rcpp, quantreg, GenSA, maxLik, SparseM, MatrixModels
+Imports: stats, utils, Rcpp, quantreg, GenSA, maxLik, SparseM, MatrixModels, methods
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.0.1
