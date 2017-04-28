@@ -52,6 +52,64 @@ Rcpp::List loop_esreg_covariance(arma::mat x, arma::colvec xq, arma::colvec xe,
 
 
 // [[Rcpp::export]]
+arma::mat .esreg_twostep_covariance(arma::mat x, arma::colvec xq, arma::colvec xe,
+                                    arma::colvec density, arma::colvec conditional_variance, double alpha) {
+  try {
+    int n = x.n_rows;
+    int k = x.n_cols;
+
+    // Define some 0-matrices
+    arma::mat C_11 = arma::zeros<arma::mat>(k, k);
+    arma::mat C_22 = arma::zeros<arma::mat>(k, k);
+
+    arma::mat G_11 = arma::zeros<arma::mat>(k, k);
+    arma::mat G_12 = arma::zeros<arma::mat>(k, k);
+    arma::mat G_22 = arma::zeros<arma::mat>(k, k);
+
+    arma::mat C = arma::zeros<arma::mat>(2*k, 2*k);
+    arma::mat B = arma::zeros<arma::mat>(2*k, 2*k);
+
+    arma::mat xi, xx;
+
+    // Compute the matrix elements
+    for (int i = 0; i < n; i++) {
+      xi = x.row(i);
+      xx = xi.t() * xi;
+
+      C_11 += alpha * xx * conditional_variance(i);
+      C_22 += alpha * (1 - alpha) * xx;
+
+      G_11 += -alpha * xx;
+      G_12 += xx * density(i) * (xe(i) - xq(i));
+      G_22 += xx * density(i);
+    }
+
+    // Compute the averages
+    C_11 /= n;
+    C_22 /= n;
+    G_11 /= n;
+    G_12 /= n;
+    G_22 /= n;
+
+    // Fill the big matrices
+    C.submat(0, 0, k-1, k-1) = C_11;
+    C.submat(k, k, 2*k-1, 2*k-1) = C_22;
+
+    B.submat(0, 0, k-1, k-1) = -inv(G_11);
+    B.submat(0, k, k-1, 2*k-1) = -inv(G_11) * G_12 * inv(G_22);
+    B.submat(k, k, 2*k-1, 2*k-1) = -inv(G_22);
+
+    // Compute the covariance
+    arma::mat cov = B * C * B.t();
+
+    return cov / n;
+  } catch(...) {
+    Rcpp::stop("Cannot compute the two-step covariance!");
+  }
+}
+
+
+// [[Rcpp::export]]
 Rcpp::NumericMatrix stationary_bootstrap_indices(int n, double avg_block_size, int B) {
   Rcpp::NumericMatrix indices(n, B);
   int start_index, block_size;
@@ -81,3 +139,6 @@ Rcpp::NumericMatrix stationary_bootstrap_indices(int n, double avg_block_size, i
   }
   return indices;
 }
+
+
+

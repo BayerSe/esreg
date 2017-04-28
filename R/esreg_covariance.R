@@ -285,3 +285,95 @@ esreg_covariance_boot <- function(fit, B = 1000, bootstrap_method = "iid", block
 
   cov
 }
+
+
+
+#' Estimated asymptotic covariance for the two-step estimator
+#'
+#' @param fit fit An object from calling esreg_twostep()
+#' @param sparsity Sparsity estimator
+#' \itemize{
+#'    \item iid - Piecewise linear interpolation of the distribution
+#'    \item nid - Hendricks and Koenker sandwich (two additional quantile regressions)
+#' }
+#' @param cond_var Conditional truncated variance estimator
+#' \itemize{
+#'    \item ind Variance over all negative residuals
+#'    \item scl_N Scaling with the Normal distribution
+#'    \item scl_t Scaling with the t-distribution
+#' }
+#' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
+#' @export
+esreg_twostep_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
+                                     bandwidth_type = "Hall-Sheather") {
+  if (class(fit) != 'esreg_twostep')
+    stop("This is not a esreg_twostep object!")
+  if (!(sparsity %in% c("iid", "nid")))
+    stop("sparsity can be iid or nid")
+  if (!(cond_var %in% c('ind', 'scl_N', 'scl_t')))
+    stop('cond_var can be ind, scl_N or scl_t')
+  if (!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
+    stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
+
+  # Extract some elements from the esreg_twostep fit object
+  y <- fit$y
+  x <- fit$x
+  alpha <- fit$alpha
+  par_q <- fit$par_q
+  par_e <- fit$par_e
+
+  # Precompute some quantities
+  xq <- as.numeric(x %*% par_q)
+  xe <- as.numeric(x %*% par_e)
+  u <- as.numeric(y - xq)
+  n <- nrow(x)
+  k <- ncol(x)
+  eps <- .Machine$double.eps^(2/3)
+
+  # Check the methods in case of sample quantile / es
+  if ((k == 1) & sparsity != "iid") {
+    warning("Changed sparsity estimation to iid!")
+    sparsity <- "iid"
+  }
+  if ((k == 1) & cond_var != "ind") {
+    warning("Changed condittional truncated variance estimation to nid!")
+    cond_var <- "ind"
+  }
+
+  # Density quantile function
+  if (sparsity == "iid") {
+    # Koenker (1994)
+    h <- max(k + 1, ceiling(n * bandwidth(n = n, alpha = alpha, type = bandwidth_type)))
+    ir <- (k + 1):(h + k + 1)
+    ord.resid <- sort(u[order(abs(u))][ir])
+    xt <- ir/(n - k)
+    dens <- 1/suppressWarnings(quantreg::rq(ord.resid ~ xt)$coef[2])
+    dens <- rep(as.numeric(dens), n)
+  } else if (sparsity == "nid") {
+    # Hendricks and Koenker (1992)
+    h <- bandwidth(n = n, alpha = alpha, type = bandwidth_type)
+    bu <- quantreg::rq(y ~ x - 1, tau = alpha + h)$coef
+    bl <- quantreg::rq(y ~ x - 1, tau = alpha - h)$coef
+    dens <- pmax(0, 2 * h/(x %*% (bu - bl) - eps))
+  }
+
+  # Truncated conditional variance
+  if (cond_var == "ind") {
+    cv <- rep(stats::var(u[u <= 0]), n)
+  } else {
+    cv <- tryCatch({
+      cv <- conditional_truncated_variance(y = u, x = x, approach = cond_var)
+      if (any(is.na(cv) | any(!is.finite(cv))))
+        stop() else cv
+    }, error = function(e) {
+      warning(paste0("Can not fit ", cond_var, ", now using ind estimator!"))
+      rep(stats::var(u[u <= 0]), n)
+    })
+  }
+
+  # Compute the covariance and return it
+  cov <- .esreg_twostep_covariance(x = x, xq = xq, xe = xe, alpha = alpha,
+                                   density = dens, conditional_variance = cv)
+  cov
+}
+
