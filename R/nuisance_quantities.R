@@ -36,7 +36,7 @@ density_quantile_function <- function(y, x, u, alpha, sparsity, bandwidth_type) 
   # Compute the density
   if (sparsity == "iid") {
     # Koenker (1994)
-    h <- max(k + 1, ceiling(n * bandwidth(n = n, alpha = alpha, type = bandwidth_type)))
+    h <- max(k + 1, ceiling(n * bandwidth))
     ir <- (k + 1):(h + k + 1)
     ord.resid <- sort(u[order(abs(u))][ir])
     xt <- ir/(n - k)
@@ -44,9 +44,8 @@ density_quantile_function <- function(y, x, u, alpha, sparsity, bandwidth_type) 
     density <- rep(as.numeric(density), n)
   } else if (sparsity == "nid") {
     # Hendricks and Koenker (1992)
-    h <- bandwidth(n = n, alpha = alpha, type = bandwidth_type)
-    bu <- quantreg::rq(y ~ x - 1, tau = alpha + h)$coef
-    bl <- quantreg::rq(y ~ x - 1, tau = alpha - h)$coef
+    bu <- quantreg::rq(y ~ x - 1, tau = alpha + bandwidth)$coef
+    bl <- quantreg::rq(y ~ x - 1, tau = alpha - bandwidth)$coef
     density <- pmax(0, 2 * h/(x %*% (bu - bl) - eps))
   } else {
     stop("Not a valid density quantile function estimator!")
@@ -72,7 +71,7 @@ conditional_truncated_variance <- function(y, x, u, approach) {
   }
 
   if (approach == "ind") {
-    cv <- rep(stats::var(u[u <= 0]), n)
+    cv <- rep(stats::var(u[u <= 0]), length(u))
   } else if (approach %in% c("scl_N", "scl_t")) {
     if (!("maxLik" %in% rownames(utils::installed.packages()))) {
       stop("maxLik needed for this function to work. Please install it.")
@@ -180,7 +179,7 @@ conditional_truncated_variance <- function(y, x, u, approach) {
       if (any(is.na(cv) | any(!is.finite(cv)))) stop() else cv
     }, error = function(e) {
       warning(paste0("Can not fit the ", approach, " estimator, I'm switching to the ind approach!"))
-      rep(stats::var(u[u <= 0]), n)
+      rep(stats::var(u[u <= 0]), length(u))
     })
   } else {
     stop("Not a valid estimator!")
