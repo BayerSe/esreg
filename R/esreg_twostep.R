@@ -3,8 +3,7 @@
 #' Estimates the expected shortfall in two steps.
 #'
 #' This estimator is much faster than the
-#' one-step estimator \link{esreg}. Its estimates are, however,
-#' less precise and therefore \link{esreg} is geneally the preferred estimator.
+#' one-step estimator \link{esreg}. Its estimates are, however, often less precise.
 #'
 #' @param formula y ~ x1 + x2 + ...
 #' @param data data.frame that stores y and x. Extracted from the enviroment if missing.
@@ -70,69 +69,110 @@ fitted.esreg_twostep <- function(object, ...) {
   cbind(object$x %*% object$par_q, object$x %*% object$par_e)
 }
 
-#' Estimated asymptotic covariance for the two-step estimator
+#' Estimated covariance of the two-step (VaR, ES) estimator
 #'
-#' @param fit fit An object from calling esreg_twostep()
+#' Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+#' either using the asymptotic formulas or using the bootstrap.
+#'
 #' @param sparsity Sparsity estimator
 #' \itemize{
-#'    \item iid - Piecewise linear interpolation of the distribution
-#'    \item nid - Hendricks and Koenker sandwich (two additional quantile regressions)
+#'   \item iid - Piecewise linear interpolation of the distribution
+#'   \item nid - Hendricks and Koenker sandwich
 #' }
 #' @param cond_var Conditional truncated variance estimator
 #' \itemize{
-#'    \item ind Variance over all negative residuals
-#'    \item scl_N Scaling with the Normal distribution
-#'    \item scl_t Scaling with the t-distribution
+#'   \item ind Variance over all negative residuals
+#'   \item scl_N Scaling with the Normal distribution
+#'   \item scl_t Scaling with the t-distribution
 #' }
 #' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
+#' @param bootstrap_method
+#' \itemize{
+#'   \item NULL asymptotic estimator
+#'   \item iid
+#'   \item stationary Politis & Romano (1994)
+#' }
+#' @param B Number of bootstrap iterations
+#' @param block_length Average block length for the stationary bootstrap
 #' @export
-esreg_twostep_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
-                                     bandwidth_type = "Hall-Sheather") {
-  if (!methods::is(fit, "esreg_twostep"))
-    stop("This is not a esreg_twostep object!")
-  if (!(sparsity %in% c("iid", "nid")))
-    stop("sparsity can be iid or nid")
-  if (!(cond_var %in% c('ind', 'scl_N', 'scl_t')))
-    stop('cond_var can be ind, scl_N or scl_t')
-  if (!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
-    stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
+vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_type = "Hall-Sheather",
+                       bootstrap_method = NULL, B = 1000, block_length = NULL, ...) {
+  fit <- object
 
-  # Extract some elements from the esreg_twostep fit object
-  y <- fit$y
-  x <- fit$x
-  alpha <- fit$alpha
-  par_q <- fit$par_q
-  par_e <- fit$par_e
+  if(is.null(bootstrap_method)) {
+    if(!(sparsity %in% c("iid", "nid")))
+      stop("sparsity can be iid or nid")
+    if(!(cond_var %in% c('ind', 'scl_N', 'scl_t')))
+      stop('cond_var can be ind, scl_N or scl_t')
+    if(!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
+      stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
 
-  # Precompute some quantities
-  xq <- as.numeric(x %*% par_q)
-  xe <- as.numeric(x %*% par_e)
-  u <- as.numeric(y - xq)
-  n <- nrow(x)
-  k <- ncol(x)
+    # Extract some elements
+    y <- fit$y
+    x <- fit$x
+    n <- nrow(x)
+    k <- ncol(x)
+    par_q <- fit$par_q
+    par_e <- fit$par_e
 
-  # Check the methods in case of sample quantile / es
-  if ((k == 1) & sparsity != "iid") {
-    warning("Changed sparsity estimation to iid!")
-    sparsity <- "iid"
+    # Precompute some quantities
+    xq <- as.numeric(x %*% par_q)
+    xe <- as.numeric(x %*% par_e)
+    u <- as.numeric(y - xq)
+
+    # Check the methods in case of sample quantile / es
+    if ((k == 1) & sparsity != "iid") {
+      warning("Changed sparsity estimation to iid!")
+      sparsity <- "iid"
+    }
+    if ((k == 1) & cond_var != "ind") {
+      warning("Changed conditional truncated variance estimation to nid!")
+      cond_var <- "ind"
+    }
+
+    # Density quantile function
+    dens <- density_quantile_function(y = y, x = x, u = u, alpha = fit$alpha,
+                                      sparsity = sparsity, bandwidth_type = bandwidth_type)
+
+    # Truncated conditional variance
+    cv <- conditional_truncated_variance(y = y, x = x, u = u, approach = cond_var)
+
+    # Compute and return the covariance matrix
+    cov <- l_esreg_twostep_covariance(x = x, xq = xq, xe = xe, alpha = fit$alpha,
+                                      density = dens, conditional_variance = cv)
+
+    # Flip blockwise such that it matches the rest of the esreg package
+    cov <- rbind(cbind(cov[(k+1):(2*k), (k+1):(2*k)], cov[1:k, (k+1):(2*k)]),
+                 cbind(cov[(k+1):(2*k), 1:k], cov[1:k, 1:k]))
+  } else {
+    if (!(bootstrap_method %in% c(NULL, "iid", "stationary")))
+      stop("bootstrap_method can be NULL, iid or stationary")
+    if (B < 1000)
+      warning("The number of bootstrap iterations is small!")
+
+    # Draw the bootstrap indices
+    n <- length(fit$y)
+    set.seed(1)
+    if (bootstrap_method == "iid") {
+      idx <- matrix(sample(1:n, size = n * B, replace = TRUE), nrow = n)
+    } else if (bootstrap_method == "stationary") {
+      if (is.null(block_length))
+        stop("No average block length provided!")
+      idx <- stationary_bootstrap_indices(n = n, avg_block_size = block_length, B = B)
+    }
+
+    b <- apply(idx, 2, function(id) {
+      fitb <- esreg_twostep(fit$y[id] ~ fit$x[id, -1], alpha = fit$alpha)
+      fitb$par
+    })
+
+    # Compute the covariance
+    cov <- stats::cov(t(b))
   }
-  if ((k == 1) & cond_var != "ind") {
-    warning("Changed condittional truncated variance estimation to nid!")
-    cond_var <- "ind"
-  }
 
-  # Density quantile function
-  dens <- density_quantile_function(y = y, x = x, u = u, alpha = alpha,
-                                    sparsity = sparsity, bandwidth_type = bandwidth_type)
+  # Set the names
+  rownames(cov) <- colnames(cov) <- names(coef(fit))
 
-  # Truncated conditional variance
-  cv <- conditional_truncated_variance(y = y, x = x, u = u, approach = cond_var)
-
-  # Compute and return the covariance matrix
-  cov <- l_esreg_twostep_covariance(x = x, xq = xq, xe = xe, alpha = alpha,
-                                    density = dens, conditional_variance = cv)
-
-  # Flip blockwise such that it matches the rest of the esreg package
-  cov <- rbind(cbind(cov[(k+1):(2*k), (k+1):(2*k)], cov[1:k, (k+1):(2*k)]),
-               cbind(cov[(k+1):(2*k), 1:k], cov[1:k, 1:k]))
+  # Return the estimated covariance
+  cov
 }

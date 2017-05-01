@@ -29,7 +29,7 @@ Examples
 
     # Estimate the model and the covariance
     fit <- esreg(y ~ x, alpha = 0.025)
-    cov <- esreg_covariance(fit = fit, sparsity = "nid", cond_var = "scl_t")
+    cov <- vcov(object = fit, sparsity = "nid", cond_var = "scl_t")
 
 References
 ----------

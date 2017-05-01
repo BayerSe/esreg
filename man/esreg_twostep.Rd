@@ -18,6 +18,5 @@ Estimates the expected shortfall in two steps.
 }
 \details{
 This estimator is much faster than the
-one-step estimator \link{esreg}. Its estimates are, however,
-less precise and therefore \link{esreg} is geneally the preferred estimator.
+one-step estimator \link{esreg}. Its estimates are, however, often less precise.
 }
