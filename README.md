@@ -23,12 +23,13 @@ Examples
     library(esreg)
 
     # Simulate data from DGP-(2)
+    set.seed(1)
     x <- rchisq(1000, df = 1)
     y <- -x + (1 + 0.1 * x) * rnorm(1000)
 
     # Estimate the model and the covariance
     fit <- esreg(y ~ x, alpha = 0.025)
-    cov <- esreg_covariance(fit = fit)
+    cov <- esreg_covariance(fit = fit, sparsity = "nid", cond_var = "scl_t")
 
 References
 ----------
