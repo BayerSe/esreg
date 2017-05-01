@@ -23,7 +23,7 @@
   } else if (g2 == 4) {
     g2_name <- "G2(z) = 1 / (1 + exp(-z))"
   } else if (g2 == 5) {
-    g2_name <- "G2(z) = exp(z"
+    g2_name <- "G2(z) = exp(z)"
   }
   c(g1_name, g2_name)
 }
