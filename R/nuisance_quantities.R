@@ -46,7 +46,7 @@ density_quantile_function <- function(y, x, u, alpha, sparsity, bandwidth_type) 
     # Hendricks and Koenker (1992)
     bu <- quantreg::rq(y ~ x - 1, tau = alpha + bandwidth)$coef
     bl <- quantreg::rq(y ~ x - 1, tau = alpha - bandwidth)$coef
-    density <- pmax(0, 2 * h/(x %*% (bu - bl) - eps))
+    density <- pmax(0, 2 * bandwidth/(x %*% (bu - bl) - eps))
   } else {
     stop("Not a valid density quantile function estimator!")
   }
