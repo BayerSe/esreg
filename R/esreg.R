@@ -167,75 +167,125 @@ fitted.esreg <- function(object, ...) {
   cbind(object$x %*% object$par_q, object$x %*% object$par_e)
 }
 
-
-#' Two Step (VaR, ES) Regression
+#' Estimated asymptotic covariance for the joint estimator
 #'
-#' Estimates the expected shortfall in two steps.
-#'
-#' This estimator is much faster than the
-#' one-step estimator \link{esreg}. Its estimates are, however,
-#' less precise and therefore \link{esreg} is geneally the preferred estimator.
-#'
-#' @param formula y ~ x1 + x2 + ...
-#' @param data data.frame that stores y and x. Extracted from the enviroment if missing.
-#' @param alpha Quantile index
+#' @param fit fit An object from calling esreg()
+#' @param sparsity Sparsity estimator
+#' \itemize{
+#'    \item iid - Piecewise linear interpolation of the distribution
+#'    \item nid - Hendricks and Koenker sandwich (two additional quantile regressions)
+#' }
+#' @param cond_var Conditional truncated variance estimator
+#' \itemize{
+#'    \item ind Variance over all negative residuals
+#'    \item scl_N Scaling with the Normal distribution
+#'    \item scl_t Scaling with the t-distribution
+#' }
+#' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
 #' @export
-esreg_twostep <- function(formula, data, alpha) {
+esreg_covariance <- function(fit, sparsity = "iid", cond_var = "ind",
+                             bandwidth_type = "Hall-Sheather") {
+  if (!methods::is(fit, "esreg"))
+    stop("This is not a esreg object!")
+  if (!(sparsity %in% c("iid", "nid")))
+    stop("sparsity can be iid or nid")
+  if (!(cond_var %in% c('ind', 'scl_N', 'scl_t')))
+    stop('cond_var can be ind, scl_N or scl_t')
+  if (!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
+    stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
 
-  # Start the timer
-  t0 <- Sys.time()
+  # Extract some elements from the esreg fit object
+  y <- fit$y
+  x <- fit$x
+  alpha <- fit$alpha
+  par_q <- fit$par_q
+  par_e <- fit$par_e
 
-  # Extract the formula
-  if (missing(data))
-    data <- environment(formula)
-  cl <- match.call()
-  mf <- stats::model.frame(formula = formula, data = data)
-  x <- stats::model.matrix(attr(mf, "terms"), data = mf)
-  y <- stats::model.response(mf)
+  # Transform the data and coefficients
+  if (fit$g2 %in% c(1, 2, 3)) {
+    max_y <- max(y)
+    y <- y - max_y
+    par_q[1] <- par_q[1] - max_y
+    par_e[1] <- par_e[1] - max_y
+  }
 
-  # Check the data
-  if (any(is.na(y)) | any(is.na(x)))
-    stop("Data contains NAs!")
-  if (!(all(is.finite(y)) & all(is.finite(x))))
-    stop("Not all values are finite!")
+  # Precompute some quantities
+  xq <- as.numeric(x %*% par_q)
+  xe <- as.numeric(x %*% par_e)
+  u <- as.numeric(y - xq)
+  n <- nrow(x)
+  k <- ncol(x)
 
-  # First stage: quantile regression
-  fit_rq <- quantreg::rq(y ~ x-1, tau = alpha)
-  q <- fit_rq$fitted.values
-  b_q <- fit_rq$coefficients
+  # Check the methods in case of sample quantile / es
+  if ((k == 1) & sparsity != "iid") {
+    warning("Changed sparsity estimation to iid!")
+    sparsity <- "iid"
+  }
+  if ((k == 1) & cond_var != "ind") {
+    warning("Changed condittional truncated variance estimation to nid!")
+    cond_var <- "ind"
+  }
 
-  # Second stage: weighted least squares regression
-  fit <- stats::lm(y ~ x-1, weights = (y <= q) * 1)
-  b_e <- fit$coefficients
+  # Density quantile function
+  dens <- density_quantile_function(y = y, x = x, u = u, alpha = alpha,
+                                    sparsity = sparsity, bandwidth_type = bandwidth_type)
 
-  # Name the coefficents
-  names(b_q) <- paste0("bq_", 1:length(b_q) - 1)
-  names(b_e) <- paste0("be_", 1:length(b_e) - 1)
+  # Truncated conditional variance
+  cv <- conditional_truncated_variance(y = y, x = x, u = u, approach = cond_var)
 
-  # Return results
-  structure(list(call = cl, alpha = alpha, y = y, x = x,
-                 par = c(b_q, b_e), par_q = b_q, par_e = b_e,
-                 time = Sys.time() - t0),
-            class = "esreg_twostep")
+  # Evaluate G1 / G2 functions
+  G1_prime_xq <- G_vec(z = xq, g = 'G1_prime', type = fit$g1)
+  G2_xe <- G_vec(z = xe, g = 'G2', type = fit$g2)
+  G2_prime_xe <- G_vec(z = xe, g = 'G2_prime', type = fit$g2)
+
+  # Compute and return the covariance matrix
+  cov <- l_esreg_covariance(x = x, xq = xq, xe = xe, alpha = alpha,
+                            G1_prime_xq = G1_prime_xq,
+                            G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
+                            density = dens, conditional_variance = cv)
+  cov
 }
 
+#' Bootstrapped Covariance
+#'
+#' Estimate the variance-covariance matrix via bootstrapping
+#'
+#' @param fit esreg object
+#' @param B Number of bootstrap iterations
+#' @param bootstrap_method iid or stationary
+#' @param block_length Average block length for the stationary bootstrap
+#' @references Politis & Romano (1994)
 #' @export
-print.esreg_twostep <- function(x, ...) {
-  cat("alpha: ", sprintf("%.3f", x$alpha), "\n")
-  cat("Time:  ", sprintf("%.3f", x$time), "\n\n")
-  cat("Call:\n")
-  cat(deparse(x$call), "\n\n")
-  cat("Estimates:\n")
-  cat(sprintf("% 0.4f", x$par_q), "\n")
-  cat(sprintf("% 0.4f", x$par_e))
-}
+esreg_covariance_boot <- function(fit, B = 1000, bootstrap_method = "iid", block_length = NULL) {
 
-#' @export
-coef.esreg_twostep <- function(object, ...) {
-  object$par
-}
+  # Draw the bootstrap indices
+  n <- length(fit$y)
+  if (bootstrap_method == "iid") {
+    idx <- matrix(sample(1:n, size = n * B, replace = TRUE), nrow = n)
+  } else if (bootstrap_method == "stationary") {
+    if (is.null(block_length)) stop("No average block length provided!")
+    idx <- stationary_bootstrap_indices(n = n, avg_block_size = block_length, B = B)
+  } else {
+    stop("Not a valid bootstrap method")
+  }
 
-#' @export
-fitted.esreg_twostep <- function(object, ...) {
-  cbind(object$x %*% object$par_q, object$x %*% object$par_e)
+  # Estimate the model on the bootstraped data
+  if (methods::is(fit, "esreg")) {
+    # Use the one_shot estimation approach for speed
+    b <- apply(idx, 2, function(id) {
+      fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
+                    alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2, method = 'one_shot')
+      fitb$par
+    })
+  } else if (methods::is(fit, "esreg_twostep")) {
+    b <- apply(idx, 2, function(id) {
+      fitb <- esreg_twostep(fit$y[id] ~ fit$x[id, -1], alpha = fit$alpha)
+      fitb$par
+    })
+  }
+
+  # Compute the covariance
+  cov <- stats::cov(t(b))
+
+  cov
 }
