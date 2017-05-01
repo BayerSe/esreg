@@ -2,7 +2,7 @@
 % Please edit documentation in R/loss_functions.R
 \name{gpl}
 \alias{gpl}
-\title{Generalized piecewise linear loss}
+\title{Generalized piecewise linear loss function}
 \usage{
 gpl(r, q, alpha, g = function(x) x, return_mean = TRUE)
 }
@@ -11,7 +11,7 @@ gpl(r, q, alpha, g = function(x) x, return_mean = TRUE)
 
 \item{q}{Vector of quantiles}
 
-\item{alpha}{Quantile}
+\item{alpha}{Quantile index}
 
 \item{g}{Nondecreasing function}
 

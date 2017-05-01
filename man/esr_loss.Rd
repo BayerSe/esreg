@@ -2,7 +2,7 @@
 % Please edit documentation in R/loss_functions.R
 \name{esr_loss}
 \alias{esr_loss}
-\title{Joint (VaR, ES) loss}
+\title{Joint (VaR, ES) loss function}
 \usage{
 esr_loss(r, q, e, alpha, g1 = 2L, g2 = 1L, return_mean = TRUE)
 }
@@ -11,7 +11,7 @@ esr_loss(r, q, e, alpha, g1 = 2L, g2 = 1L, return_mean = TRUE)
 
 \item{q}{Vector of quantiles}
 
-\item{e}{Vector of expected shortfall}
+\item{e}{Vector of expected shortfalls}
 
 \item{alpha}{Quantile index}
 
@@ -22,7 +22,7 @@ esr_loss(r, q, e, alpha, g1 = 2L, g2 = 1L, return_mean = TRUE)
 \item{return_mean}{If TRUE returns the average tick loss, else the individual values}
 }
 \description{
-Joint (VaR, ES) loss
+Joint (VaR, ES) loss function
 }
 \references{
 Fissler and Ziegel (2016)
