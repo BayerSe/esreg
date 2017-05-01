@@ -176,3 +176,9 @@ vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandw
   # Return the estimated covariance
   cov
 }
+
+#' @export
+summary.esreg_twostep <- summary.esreg
+
+#' @export
+print.summary.esreg_twostep <- print.summary.esreg

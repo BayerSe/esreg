@@ -287,3 +287,33 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
   # Return the estimated covariance
   cov
 }
+
+#' @export
+summary.esreg <- function(object, ...) {
+  fit <- object
+  x <- fit$x
+  n <- nrow(x)
+  k <- ncol(x)
+  cov <- vcov(fit, ...)
+  se <- sqrt(diag(cov))
+  tval <- coef(fit) / se
+  coefficients <- cbind(Estimate     = coef(fit),
+                        `Std. Error` = se,
+                        `t value`    = tval,
+                        `Pr(>|t|)`   = 2 * pt(abs(tval), n - 2*k, lower.tail = FALSE))
+
+  structure(list(call = object$call,
+                 cov = cov,
+                 coefficients = coefficients),
+            class = "summary.esreg")
+}
+
+#' @export
+print.summary.esreg <- function(x, ...) {
+  k <- nrow(x$coefficients) / 2
+  cat("\nCall:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
+  cat("\nQuantile Coefficients:\n")
+  printCoefmat(x$coefficients[1:k,], signif.legend = FALSE)
+  cat("\nExpected Shortfall Coefficients:\n")
+  printCoefmat(x$coefficients[(k+1):(2*k),])
+}
