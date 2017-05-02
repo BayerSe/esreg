@@ -4,16 +4,16 @@
 \alias{conditional_truncated_variance}
 \title{Conditional truncated variance}
 \usage{
-conditional_truncated_variance(y, x, u, approach)
+conditional_truncated_variance(y, x, approach)
 }
 \arguments{
 \item{y}{vector of dependent data}
 
 \item{x}{matrix of covariates}
 
-\item{u}{quantile residuals}
-
 \item{approach}{ind, scl_N or scl_t}
+
+\item{u}{quantile residuals}
 }
 \description{
 Estimate the conditional truncated variance

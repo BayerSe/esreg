@@ -65,13 +65,13 @@ density_quantile_function <- function(y, x, u, alpha, sparsity, bandwidth_type) 
 #' @param approach ind, scl_N or scl_t
 #'
 #' @export
-conditional_truncated_variance <- function(y, x, u, approach) {
-  if (sum(u <= 0) <= 2) {
+conditional_truncated_variance <- function(y, x, approach) {
+  if (sum(y <= 0) <= 2) {
     stop("Not enough negative quantile residuals!")
   }
 
   if (approach == "ind") {
-    cv <- rep(stats::var(u[u <= 0]), length(u))
+    cv <- rep(stats::var(y[y <= 0]), length(y))
   } else if (approach %in% c("scl_N", "scl_t")) {
     if (!("maxLik" %in% rownames(utils::installed.packages()))) {
       stop("maxLik needed for this function to work. Please install it.")
@@ -179,7 +179,7 @@ conditional_truncated_variance <- function(y, x, u, approach) {
       if (any(is.na(cv) | any(!is.finite(cv)))) stop() else cv
     }, error = function(e) {
       warning(paste0("Can not fit the ", approach, " estimator, I'm switching to the ind approach!"))
-      rep(stats::var(u[u <= 0]), length(u))
+      rep(stats::var(y[y <= 0]), length(y))
     })
   } else {
     stop("Not a valid estimator!")

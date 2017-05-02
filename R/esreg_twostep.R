@@ -135,7 +135,7 @@ vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandw
                                       sparsity = sparsity, bandwidth_type = bandwidth_type)
 
     # Truncated conditional variance
-    cv <- conditional_truncated_variance(y = y, x = x, u = u, approach = cond_var)
+    cv <- conditional_truncated_variance(y = u, x = x, approach = cond_var)
 
     # Compute and return the covariance matrix
     cov <- l_esreg_twostep_covariance(x = x, xq = xq, xe = xe, alpha = fit$alpha,

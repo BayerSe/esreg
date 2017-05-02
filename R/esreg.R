@@ -241,7 +241,7 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
                                       sparsity = sparsity, bandwidth_type = bandwidth_type)
 
     # Truncated conditional variance
-    cv <- conditional_truncated_variance(y = y, x = x, u = u, approach = cond_var)
+    cv <- conditional_truncated_variance(y = u, x = x, approach = cond_var)
 
     # Evaluate G1 / G2 functions
     G1_prime_xq <- G_vec(z = xq, g = "G1_prime", type = fit$g1)
@@ -294,13 +294,13 @@ summary.esreg <- function(object, ...) {
   x <- fit$x
   n <- nrow(x)
   k <- ncol(x)
-  cov <- vcov(fit, ...)
+  cov <- vcov.esreg(fit, ...)
   se <- sqrt(diag(cov))
-  tval <- coef(fit) / se
-  coefficients <- cbind(Estimate     = coef(fit),
+  tval <- coef.esreg(fit) / se
+  coefficients <- cbind(Estimate     = coef.esreg(fit),
                         `Std. Error` = se,
                         `t value`    = tval,
-                        `Pr(>|t|)`   = 2 * pt(abs(tval), n - 2*k, lower.tail = FALSE))
+                        `Pr(>|t|)`   = 2 * stats::pt(abs(tval), n - 2*k, lower.tail = FALSE))
 
   structure(list(call = object$call,
                  cov = cov,
@@ -313,7 +313,7 @@ print.summary.esreg <- function(x, ...) {
   k <- nrow(x$coefficients) / 2
   cat("\nCall:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
   cat("\nQuantile Coefficients:\n")
-  printCoefmat(x$coefficients[1:k,], signif.legend = FALSE)
+  stats::printCoefmat(x$coefficients[1:k,], signif.legend = FALSE)
   cat("\nExpected Shortfall Coefficients:\n")
   printCoefmat(x$coefficients[(k+1):(2*k),])
 }
