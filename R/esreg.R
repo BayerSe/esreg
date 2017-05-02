@@ -136,7 +136,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   # Return results
   structure(list(call = cl, target = target, method = method, g1 = g1, g2 = g2,
                  alpha = alpha, y = y, x = x, b0 = b0,
-                 par = b, par_q = b[1:k], par_e = b[(k + 1):(2 * k)],
+                 coefficients = b, coefficients_q = b[1:k], coefficients_e = b[(k + 1):(2 * k)],
                  value = fit$value, time = Sys.time() - t0),
             class = "esreg")
 }
@@ -153,18 +153,23 @@ print.esreg <- function(x, ...) {
   cat("Call:\n")
   cat(deparse(x$call), "\n\n")
   cat("Estimates:\n")
-  cat(sprintf("% 0.4f", x$par_q), "\n")
-  cat(sprintf("% 0.4f", x$par_e))
+  cat(sprintf("% 0.4f", x$coefficients_q), "\n")
+  cat(sprintf("% 0.4f", x$coefficients_e))
 }
 
 #' @export
 coef.esreg <- function(object, ...) {
-  object$par
+  object$coefficients
 }
 
 #' @export
 fitted.esreg <- function(object, ...) {
-  cbind(object$x %*% object$par_q, object$x %*% object$par_e)
+  cbind(object$x %*% object$coefficients_q, object$x %*% object$coefficients_e)
+}
+
+#' @export
+deviance.esreg <- function(object, ...) {
+  object$value
 }
 
 #' Estimated covariance of the joint (VaR, ES) estimator
@@ -210,20 +215,20 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
     x <- fit$x
     n <- nrow(x)
     k <- ncol(x)
-    par_q <- fit$par_q
-    par_e <- fit$par_e
+    coefficients_q <- fit$coefficients_q
+    coefficients_e <- fit$coefficients_e
 
     # Transform the data and coefficients
     if (fit$g2 %in% c(1, 2, 3)) {
       max_y <- max(y)
       y <- y - max_y
-      par_q[1] <- par_q[1] - max_y
-      par_e[1] <- par_e[1] - max_y
+      coefficients_q[1] <- coefficients_q[1] - max_y
+      coefficients_e[1] <- coefficients_e[1] - max_y
     }
 
     # Precompute some quantities
-    xq <- as.numeric(x %*% par_q)
-    xe <- as.numeric(x %*% par_e)
+    xq <- as.numeric(x %*% coefficients_q)
+    xe <- as.numeric(x %*% coefficients_e)
     u <- as.numeric(y - xq)
 
     # Check the methods in case of sample quantile / es
@@ -274,7 +279,7 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
     b <- apply(idx, 2, function(id) {
       fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
                     alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2, method = 'one_shot')
-      fitb$par
+      fitb$coefficients
     })
 
     # Compute the covariance

@@ -43,7 +43,7 @@ esreg_twostep <- function(formula, data, alpha) {
 
   # Return results
   structure(list(call = cl, alpha = alpha, y = y, x = x,
-                 par = c(b_q, b_e), par_q = b_q, par_e = b_e,
+                 coefficients = c(b_q, b_e), coefficients_q = b_q, coefficients_e = b_e,
                  time = Sys.time() - t0),
             class = "esreg_twostep")
 }
@@ -55,19 +55,18 @@ print.esreg_twostep <- function(x, ...) {
   cat("Call:\n")
   cat(deparse(x$call), "\n\n")
   cat("Estimates:\n")
-  cat(sprintf("% 0.4f", x$par_q), "\n")
-  cat(sprintf("% 0.4f", x$par_e))
+  cat(sprintf("% 0.4f", x$coefficients_q), "\n")
+  cat(sprintf("% 0.4f", x$coefficients_e))
 }
 
 #' @export
-coef.esreg_twostep <- function(object, ...) {
-  object$par
-}
+coef.esreg_twostep <- coef.esreg
 
 #' @export
-fitted.esreg_twostep <- function(object, ...) {
-  cbind(object$x %*% object$par_q, object$x %*% object$par_e)
-}
+fitted.esreg_twostep <- fitted.esreg
+
+#' @export
+deviance.esreg_twostep <- deviance.esreg
 
 #' Estimated covariance of the two-step (VaR, ES) estimator
 #'
@@ -112,12 +111,12 @@ vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandw
     x <- fit$x
     n <- nrow(x)
     k <- ncol(x)
-    par_q <- fit$par_q
-    par_e <- fit$par_e
+    coefficients_q <- fit$coefficients_q
+    coefficients_e <- fit$coefficients_e
 
     # Precompute some quantities
-    xq <- as.numeric(x %*% par_q)
-    xe <- as.numeric(x %*% par_e)
+    xq <- as.numeric(x %*% coefficients_q)
+    xe <- as.numeric(x %*% coefficients_e)
     u <- as.numeric(y - xq)
 
     # Check the methods in case of sample quantile / es
@@ -163,7 +162,7 @@ vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandw
 
     b <- apply(idx, 2, function(id) {
       fitb <- esreg_twostep(fit$y[id] ~ fit$x[id, -1], alpha = fit$alpha)
-      fitb$par
+      fitb$coefficients
     })
 
     # Compute the covariance
