@@ -33,7 +33,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   # Extract the formula
   if (missing(data))
     data <- environment(formula)
-  cl <- match.call()
+  call <- match.call()
   mf <- stats::model.frame(formula = formula, data = data)
   x <- stats::model.matrix(attr(mf, "terms"), data = mf)
   y <- stats::model.response(mf)
@@ -134,42 +134,31 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   }
 
   # Return results
-  structure(list(call = cl, target = target, method = method, g1 = g1, g2 = g2,
-                 alpha = alpha, y = y, x = x, b0 = b0,
-                 coefficients = b, coefficients_q = b[1:k], coefficients_e = b[(k + 1):(2 * k)],
-                 value = fit$value, time = Sys.time() - t0),
+  structure(list(call = call, formula = formula,
+                 target = target, method = method, g1 = g1, g2 = g2,
+                 alpha = alpha, y = y, x = x,
+                 coefficients = b,
+                 coefficients_q = b[1:k],
+                 coefficients_e = b[(k + 1):(2 * k)],
+                 value = fit$value,
+                 time = Sys.time() - t0),
             class = "esreg")
 }
 
 #' @export
-print.esreg <- function(x, ...) {
-  cat("Method:", x$method, "\n")
-  cat("Target:", x$target, "\n")
-  cat(.G_function_names(x$g1, x$g2)[1], "\n")
-  cat(.G_function_names(x$g1, x$g2)[2], "\n")
-  cat("Value: ", sprintf("%.9f", x$value), "\n")
-  cat("alpha: ", sprintf("%.3f", x$alpha), "\n")
-  cat("Time:  ", sprintf("%.3f", x$time), "\n\n")
+print.esreg <- function(x, digits = 4, ...) {
   cat("Call:\n")
-  cat(deparse(x$call), "\n\n")
-  cat("Estimates:\n")
-  cat(sprintf("% 0.4f", x$coefficients_q), "\n")
-  cat(sprintf("% 0.4f", x$coefficients_e))
-}
-
-#' @export
-coef.esreg <- function(object, ...) {
-  object$coefficients
+  cat(deparse(x$call), "\n")
+  cat("\nQuantile Coefficients:\n")
+  print(format(x$coefficients_q, digits = digits), quote = FALSE)
+  cat("\nExpected Shortfall Coefficients:\n")
+  print(format(x$coefficients_e, digits = digits), quote = FALSE)
 }
 
 #' @export
 fitted.esreg <- function(object, ...) {
-  cbind(object$x %*% object$coefficients_q, object$x %*% object$coefficients_e)
-}
-
-#' @export
-deviance.esreg <- function(object, ...) {
-  object$value
+  cbind(object$x %*% object$coefficients_q,
+        object$x %*% object$coefficients_e)
 }
 
 #' Estimated covariance of the joint (VaR, ES) estimator
@@ -199,7 +188,7 @@ deviance.esreg <- function(object, ...) {
 #' @param block_length Average block length for the stationary bootstrap
 #' @export
 vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_type = "Hall-Sheather",
-                       bootstrap_method = NULL, B = 1000, block_length = NULL, ...) {
+                       bootstrap_method = NULL, B = 1000, block_length = NULL) {
   fit <- object
 
   if(is.null(bootstrap_method)) {
@@ -287,7 +276,7 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
   }
 
   # Set the names
-  rownames(cov) <- colnames(cov) <- names(coef(fit))
+  rownames(cov) <- colnames(cov) <- names(stats::coef(fit))
 
   # Return the estimated covariance
   cov
@@ -301,24 +290,25 @@ summary.esreg <- function(object, ...) {
   k <- ncol(x)
   cov <- vcov.esreg(fit, ...)
   se <- sqrt(diag(cov))
-  tval <- coef.esreg(fit) / se
-  coefficients <- cbind(Estimate     = coef.esreg(fit),
-                        `Std. Error` = se,
-                        `t value`    = tval,
-                        `Pr(>|t|)`   = 2 * stats::pt(abs(tval), n - 2*k, lower.tail = FALSE))
+  tval <- stats::coef(fit) / se
+  coef_mat <- cbind(Estimate     = stats::coef(fit),
+                    `Std. Error` = se,
+                    `t value`    = tval,
+                    `Pr(>|t|)`   = 2 * stats::pt(abs(tval), n - 2*k, lower.tail = FALSE))
 
-  structure(list(call = object$call,
-                 cov = cov,
-                 coefficients = coefficients),
-            class = "summary.esreg")
+  structure(c(fit, list(cov = cov, coef_mat = coef_mat)), class = "summary.esreg")
 }
 
 #' @export
 print.summary.esreg <- function(x, ...) {
-  k <- nrow(x$coefficients) / 2
-  cat("\nCall:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
+  k <- length(x$coefficients_q)
+  cat("Call:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
+  cat("\nalpha: ", sprintf("%.3f", x$alpha), "\n")
+  cat(.G_function_names(x$g1, x$g2)[1], "\n")
+  cat(.G_function_names(x$g1, x$g2)[2], "\n")
+  cat("Value: ", sprintf("%.9f", x$value), "\n")
   cat("\nQuantile Coefficients:\n")
-  stats::printCoefmat(x$coefficients[1:k,], signif.legend = FALSE)
+  stats::printCoefmat(x$coef_mat[1:k,], signif.legend = FALSE)
   cat("\nExpected Shortfall Coefficients:\n")
-  printCoefmat(x$coefficients[(k+1):(2*k),])
+  stats::printCoefmat(x$coef_mat[(k+1):(2*k),])
 }

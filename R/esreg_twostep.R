@@ -17,7 +17,7 @@ esreg_twostep <- function(formula, data, alpha) {
   # Extract the formula
   if (missing(data))
     data <- environment(formula)
-  cl <- match.call()
+  call <- match.call()
   mf <- stats::model.frame(formula = formula, data = data)
   x <- stats::model.matrix(attr(mf, "terms"), data = mf)
   y <- stats::model.response(mf)
@@ -42,31 +42,20 @@ esreg_twostep <- function(formula, data, alpha) {
   names(b_e) <- paste0("be_", 1:length(b_e) - 1)
 
   # Return results
-  structure(list(call = cl, alpha = alpha, y = y, x = x,
-                 coefficients = c(b_q, b_e), coefficients_q = b_q, coefficients_e = b_e,
+  structure(list(call = call, formula = formula,
+                 alpha = alpha, y = y, x = x,
+                 coefficients = c(b_q, b_e),
+                 coefficients_q = b_q,
+                 coefficients_e = b_e,
                  time = Sys.time() - t0),
             class = "esreg_twostep")
 }
 
 #' @export
-print.esreg_twostep <- function(x, ...) {
-  cat("alpha: ", sprintf("%.3f", x$alpha), "\n")
-  cat("Time:  ", sprintf("%.3f", x$time), "\n\n")
-  cat("Call:\n")
-  cat(deparse(x$call), "\n\n")
-  cat("Estimates:\n")
-  cat(sprintf("% 0.4f", x$coefficients_q), "\n")
-  cat(sprintf("% 0.4f", x$coefficients_e))
-}
-
-#' @export
-coef.esreg_twostep <- coef.esreg
+print.esreg_twostep <- print.esreg
 
 #' @export
 fitted.esreg_twostep <- fitted.esreg
-
-#' @export
-deviance.esreg_twostep <- deviance.esreg
 
 #' Estimated covariance of the two-step (VaR, ES) estimator
 #'
@@ -95,7 +84,7 @@ deviance.esreg_twostep <- deviance.esreg
 #' @param block_length Average block length for the stationary bootstrap
 #' @export
 vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_type = "Hall-Sheather",
-                       bootstrap_method = NULL, B = 1000, block_length = NULL, ...) {
+                       bootstrap_method = NULL, B = 1000, block_length = NULL) {
   fit <- object
 
   if(is.null(bootstrap_method)) {
@@ -170,14 +159,36 @@ vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandw
   }
 
   # Set the names
-  rownames(cov) <- colnames(cov) <- names(coef(fit))
+  rownames(cov) <- colnames(cov) <- names(stats::coef(fit))
 
   # Return the estimated covariance
   cov
 }
 
 #' @export
-summary.esreg_twostep <- summary.esreg
+summary.esreg_twostep <- function(object, ...) {
+  fit <- object
+  x <- fit$x
+  n <- nrow(x)
+  k <- ncol(x)
+  cov <- vcov.esreg_twostep(fit, ...)
+  se <- sqrt(diag(cov))
+  tval <- stats::coef(fit) / se
+  coef_mat <- cbind(Estimate     = stats::coef(fit),
+                    `Std. Error` = se,
+                    `t value`    = tval,
+                    `Pr(>|t|)`   = 2 * stats::pt(abs(tval), n - 2*k, lower.tail = FALSE))
+
+  structure(c(fit, list(cov = cov, coef_mat = coef_mat)), class = "summary.esreg_twostep")
+}
 
 #' @export
-print.summary.esreg_twostep <- print.summary.esreg
+print.summary.esreg_twostep <- function(x, ...) {
+  k <- length(x$coefficients_q)
+  cat("Call:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
+  cat("\nalpha: ", sprintf("%.3f", x$alpha), "\n")
+  cat("\nQuantile Coefficients:\n")
+  stats::printCoefmat(x$coef_mat[1:k,], signif.legend = FALSE)
+  cat("\nExpected Shortfall Coefficients:\n")
+  stats::printCoefmat(x$coef_mat[(k+1):(2*k),])
+}

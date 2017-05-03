@@ -6,7 +6,7 @@
 \usage{
 \method{vcov}{esreg_twostep}(object, sparsity = "iid", cond_var = "ind",
   bandwidth_type = "Hall-Sheather", bootstrap_method = NULL, B = 1000,
-  block_length = NULL, ...)
+  block_length = NULL)
 }
 \arguments{
 \item{sparsity}{Sparsity estimator
