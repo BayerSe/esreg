@@ -13,7 +13,7 @@ esr_loss(r, q, e, alpha, g1 = 2L, g2 = 1L, return_mean = TRUE)
 
 \item{e}{Vector of expected shortfalls}
 
-\item{alpha}{Quantile index}
+\item{alpha}{Quantile of interest}
 
 \item{g1}{1, 2, see \link{G1_fun}}
 
@@ -22,7 +22,7 @@ esr_loss(r, q, e, alpha, g1 = 2L, g2 = 1L, return_mean = TRUE)
 \item{return_mean}{If TRUE returns the average tick loss, else the individual values}
 }
 \description{
-Joint (VaR, ES) loss function
+Computes the joint (VaR, ES) loss
 }
 \references{
 Fissler and Ziegel (2016)

@@ -2,22 +2,24 @@
 % Please edit documentation in R/esreg.R
 \name{vcov.esreg}
 \alias{vcov.esreg}
-\title{Estimated covariance of the joint (VaR, ES) estimator}
+\title{Covariance of the joint (VaR, ES) estimator}
 \usage{
 \method{vcov}{esreg}(object, sparsity = "iid", cond_var = "ind",
   bandwidth_type = "Hall-Sheather", bootstrap_method = NULL, B = 1000,
-  block_length = NULL)
+  block_length = NULL, ...)
 }
 \arguments{
+\item{object}{An esreg object}
+
 \item{sparsity}{Sparsity estimator
 \itemize{
-  \item iid - Piecewise linear interpolation of the distribution
+  \item [iid] - Piecewise linear interpolation of the distribution
   \item nid - Hendricks and Koenker sandwich
 }}
 
 \item{cond_var}{Conditional truncated variance estimator
 \itemize{
-  \item ind Variance over all negative residuals
+  \item [ind] Variance over all negative residuals
   \item scl_N Scaling with the Normal distribution
   \item scl_t Scaling with the t-distribution
 }}
@@ -25,16 +27,17 @@
 \item{bandwidth_type}{Bofinger, Chamberlain or Hall-Sheather}
 
 \item{bootstrap_method}{\itemize{
-  \item NULL asymptotic estimator
-  \item iid
-  \item stationary Politis & Romano (1994)
+  \item [NULL] Use the asymptotic estimator
+  \item iid bootstrap
+  \item stationary bootstrap (Politis & Romano, 1994)
 }}
 
 \item{B}{Number of bootstrap iterations}
 
 \item{block_length}{Average block length for the stationary bootstrap}
+
+\item{...}{additional arguments}
 }
 \description{
-Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
-either using the asymptotic formulas or using the bootstrap.
+Estimate the variance-covariance matrix of the joint (VaR, ES) estimator either using the asymptotic formulas or using the bootstrap.
 }

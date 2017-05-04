@@ -1,15 +1,30 @@
-#' Joint (VaR, ES) Regression
+#' @title Joint (VaR, ES) Regression
+#' @description  Estimates a joint linear regression model for the pair (VaR, ES):
+#' \deqn{Q_\alpha(Y | X) = X'\beta_q}
+#' \deqn{ES_\alpha(Y | X) = X'\beta_e}
+#' @param formula Forumula object, e.g.: y ~ x1 + x2 + ...
+#' @param data data.frame that holds the variables. Can be missing.
+#' @param alpha Quantile of interest
+#' @param g1 1, [2] (see \link{G1_fun}, \link{G1_prime_fun})
+#' @param g2 [1], 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun}, \link{G2_prime_fun})
+#' @param b0 Starting values for the optimization; if NULL they are obtained from two additional quantile regressions
+#' @param target The functions to be optimized: either the loss [rho] or the identification function (psi). The rho function is strongly recommended.
+#' @param method one_shot, [random_restart] or gensa
+#' @param random_restart_ctrl list: N [1000] number of random starting points; M [10] optimize over the M best; sd [sqrt(0.1)] std dev of the random component
+#' @param gensa_ctrl Parameters to be passed to the GenSA opzimizer
+#' @return An esreg object
+#' @seealso \code{\link{vcov.esreg}} for the covariance estimation and
+#' \code{\link{summary.esreg}} for a summary of the regression results
+#' @examples
+#' # Simulate data
+#' set.seed(1)
+#' x <- rchisq(1000, df = 1)
+#' y <- -x + (1 + 0.1 * x) * rnorm(1000)
 #'
-#' @param formula y ~ x1 + x2 + ...
-#' @param data data.frame that stores y and x. Extracted from the enviroment if missing.
-#' @param alpha Quantile index
-#' @param g1 1, 2 (see \link{G1_fun}, \link{G1_prime_fun})
-#' @param g2 1, 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun}, \link{G2_prime_fun})
-#' @param b0 Starting values; if NULL they are obtained from two additional quantile regressions
-#' @param target The functions to be optimized: either the loss (rho) or the identification function (psi).
-#' @param method one_shot, random_restart or gensa
-#' @param random_restart_ctrl list: N number of random starting points; M optimize over the M best; sd std dev of the random component
-#' @param gensa_ctrl Parameters to be passed to GenSA
+#' # Estimate the model and the covariance
+#' fit <- esreg(y ~ x, alpha = 0.025)
+#' summary(object = fit, sparsity = "nid", cond_var = "scl_t")
+#' @references \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
 #' @export
 esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho", method = "random_restart",
                   random_restart_ctrl = list(M = 10, N = 1000, sd = sqrt(0.1)),
@@ -161,34 +176,33 @@ fitted.esreg <- function(object, ...) {
         object$x %*% object$coefficients_e)
 }
 
-#' Estimated covariance of the joint (VaR, ES) estimator
-#'
-#' Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
-#' either using the asymptotic formulas or using the bootstrap.
-#'
+#' @title Covariance of the joint (VaR, ES) estimator
+#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator either using the asymptotic formulas or using the bootstrap.
+#' @param object An esreg object
 #' @param sparsity Sparsity estimator
 #' \itemize{
-#'   \item iid - Piecewise linear interpolation of the distribution
+#'   \item [iid] - Piecewise linear interpolation of the distribution
 #'   \item nid - Hendricks and Koenker sandwich
 #' }
 #' @param cond_var Conditional truncated variance estimator
 #' \itemize{
-#'   \item ind Variance over all negative residuals
+#'   \item [ind] Variance over all negative residuals
 #'   \item scl_N Scaling with the Normal distribution
 #'   \item scl_t Scaling with the t-distribution
 #' }
 #' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
 #' @param bootstrap_method
 #' \itemize{
-#'   \item NULL asymptotic estimator
-#'   \item iid
-#'   \item stationary Politis & Romano (1994)
+#'   \item [NULL] Use the asymptotic estimator
+#'   \item iid bootstrap
+#'   \item stationary bootstrap (Politis & Romano, 1994)
 #' }
 #' @param B Number of bootstrap iterations
 #' @param block_length Average block length for the stationary bootstrap
+#' @param ... additional arguments
 #' @export
 vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_type = "Hall-Sheather",
-                       bootstrap_method = NULL, B = 1000, block_length = NULL) {
+                       bootstrap_method = NULL, B = 1000, block_length = NULL, ...) {
   fit <- object
 
   if(is.null(bootstrap_method)) {
@@ -282,6 +296,10 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
   cov
 }
 
+#' @title esreg summary
+#' @description Summarize details about the regression estimates.
+#' @param object An esreg object
+#' @param ... Accepts all parameters you can pass to \code{\link{vcov.esreg}}.
 #' @export
 summary.esreg <- function(object, ...) {
   fit <- object

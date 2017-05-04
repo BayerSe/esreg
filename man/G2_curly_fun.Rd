@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{G2_curly_fun}
 \alias{G2_curly_fun}
-\title{Specification Function: G2_curly}
+\title{Specification Function}
 \usage{
 G2_curly_fun(z, type)
 }
@@ -19,5 +19,5 @@ G2_curly_fun(z, type)
 }}
 }
 \description{
-Specification Function: G2_curly
+G2_curly
 }

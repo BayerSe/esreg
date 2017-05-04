@@ -1,14 +1,11 @@
-#' Denstiy Quantile Function
-#'
-#' Estimate the density quantile function
-#'
-#' @param y vector of dependent data
-#' @param x matrix of covariates
-#' @param u quantile residuals
-#' @param alpha quantile level
+#' @title Denstiy Quantile Function
+#' @description Estimate the density quantile function
+#' @param y Vector of dependent data
+#' @param x Matrix of covariates
+#' @param u Quantile residuals
+#' @param alpha Quantile of interest
 #' @param sparsity iid or ind
 #' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
-#'
 #' @references Bofinger (1975), Chamberlain (1994), Hall and Sheather(1988)
 #' @export
 density_quantile_function <- function(y, x, u, alpha, sparsity, bandwidth_type) {
@@ -55,15 +52,11 @@ density_quantile_function <- function(y, x, u, alpha, sparsity, bandwidth_type) 
 }
 
 
-#' Conditional truncated variance
-#'
-#' Estimate the conditional truncated variance
-#'
-#' @param y vector of dependent data
-#' @param x matrix of covariates
-#' @param u quantile residuals
+#' @title Conditional truncated variance
+#' @description Estimate the conditional truncated variance of y given x when y is truncated at 0.
+#' @param y Vector of dependent data
+#' @param x Matrix of covariates
 #' @param approach ind, scl_N or scl_t
-#'
 #' @export
 conditional_truncated_variance <- function(y, x, approach) {
   if (sum(y <= 0) <= 2) {

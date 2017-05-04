@@ -1,9 +1,9 @@
-#' Joint (VaR, ES) loss function
-#'
+#' @title Joint (VaR, ES) loss function
+#' @description Computes the joint (VaR, ES) loss
 #' @param r Vector of returns
 #' @param q Vector of quantiles
 #' @param e Vector of expected shortfalls
-#' @param alpha Quantile index
+#' @param alpha Quantile of interest
 #' @param g1 1, 2, see \link{G1_fun}
 #' @param g2 1, 2, 3, 4, 5, see \link{G2_curly_fun}, \link{G2_fun}
 #' @param return_mean If TRUE returns the average tick loss, else the individual values
@@ -25,14 +25,12 @@ esr_loss <- function(r, q, e, alpha, g1 = 2L, g2 = 1L, return_mean = TRUE) {
   }
 }
 
-#' Generalized piecewise linear loss function
-#'
-#' Equivalent to the tick / check loss when g is the identity function.
-#'
+#' @title Generalized piecewise linear loss function
+#' @description Equivalent to the tick / check loss when g is the identity function.
 #' @param r Vector of returns
 #' @param q Vector of quantiles
-#' @param alpha Quantile index
-#' @param g Nondecreasing function
+#' @param alpha Quantile of interst
+#' @param g A nondecreasing function
 #' @param return_mean If TRUE returns the average tick loss, else the individual values
 #' @references Gneiting (2011)
 #' @export

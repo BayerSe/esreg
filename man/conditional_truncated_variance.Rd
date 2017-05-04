@@ -7,14 +7,12 @@
 conditional_truncated_variance(y, x, approach)
 }
 \arguments{
-\item{y}{vector of dependent data}
+\item{y}{Vector of dependent data}
 
-\item{x}{matrix of covariates}
+\item{x}{Matrix of covariates}
 
 \item{approach}{ind, scl_N or scl_t}
-
-\item{u}{quantile residuals}
 }
 \description{
-Estimate the conditional truncated variance
+Estimate the conditional truncated variance of y given x when y is truncated at 0.
 }

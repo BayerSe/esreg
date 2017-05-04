@@ -13,8 +13,8 @@ stationary_bootstrap_indices <- function(n, avg_block_size, B) {
     .Call('esreg_stationary_bootstrap_indices', PACKAGE = 'esreg', n, avg_block_size, B)
 }
 
-#' Specification Function: G1
-#'
+#' @title Specification Function
+#' @description G1
 #' @param z Data
 #' @param type Choice of the G1 function:
 #' \itemize{
@@ -26,8 +26,8 @@ G1_fun <- function(z, type) {
     .Call('esreg_G1_fun', PACKAGE = 'esreg', z, type)
 }
 
-#' Specification Function: G1_prime
-#'
+#' @title Specification Function
+#' @description G1_prime
 #' @param z Data
 #' @param type Choice of the G1_prime function:
 #' \itemize{
@@ -40,8 +40,8 @@ G1_prime_fun <- function(z, type) {
     .Call('esreg_G1_prime_fun', PACKAGE = 'esreg', z, type)
 }
 
-#' Specification Function: G2_curly
-#'
+#' @title Specification Function
+#' @description G2_curly
 #' @param z Data
 #' @param type Choice of the G2_curly function:
 #' \itemize{
@@ -56,8 +56,8 @@ G2_curly_fun <- function(z, type) {
     .Call('esreg_G2_curly_fun', PACKAGE = 'esreg', z, type)
 }
 
-#' Specification Function: G2
-#'
+#' @title Specification Function
+#' @description G2
 #' @param z Data
 #' @param type Choice of the G2 function:
 #' \itemize{
@@ -72,8 +72,8 @@ G2_fun <- function(z, type) {
     .Call('esreg_G2_fun', PACKAGE = 'esreg', z, type)
 }
 
-#' Specification Function: G2_prime
-#'
+#' @title Specification Function
+#' @description G2_prime
 #' @param z Data
 #' @param type Choice of the G2_prime function:
 #' \itemize{
@@ -88,23 +88,22 @@ G2_prime_fun <- function(z, type) {
     .Call('esreg_G2_prime_fun', PACKAGE = 'esreg', z, type)
 }
 
-#' Vectorized call to the G1/G2 functions
-#'
+#' @title Vectorized call to the G1/G2 functions
+#' @description Vectorized call to the G1/G2 functions
 #' @param z Vector
 #' @param g G1, G1_prime, G2_curly, G2 or G2_curly
 #' @param type G1: 1-2; G2: 1-5
-#'
 #' @export
 G_vec <- function(z, g, type) {
     .Call('esreg_G_vec', PACKAGE = 'esreg', z, g, type)
 }
 
-#' Joint (VaR, ES) loss for a linear predictor
-#'
+#' @title Joint (VaR, ES) loss for a linear predictor
+#' @description Returns the loss at b
 #' @param b Parameter vector
 #' @param y Vector of dependent data
 #' @param x Matrix of covariates. Note: intercept needs to be added manually
-#' @param alpha Quantile index
+#' @param alpha Quantile of interest
 #' @param g1 1, 2 (see \link{G1_fun})
 #' @param g2 1, 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun})
 #' @param delta Approximation of the indicator function (0 is the indicator function)
@@ -115,16 +114,14 @@ esr_rho_lp <- function(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0) {
     .Call('esreg_esr_rho_lp', PACKAGE = 'esreg', b, y, x, alpha, g1, g2, delta)
 }
 
-#' Indentification function for the pair (VaR, ES) for a linear predictor
-#'
-#' Returns psi' * psi.
-#'
+#' @title Indentification function for the pair (VaR, ES) for a linear predictor
+#' @description Returns psi' * psi.
 #' @param b Parameter vector
 #' @param y Vector of dependent data
 #' @param x Matrix of covariates. Note: intercept needs to be added manually
-#' @param alpha Quantile index
+#' @param alpha Quantile of interest
 #' @param g1 1, 2 (see \link{G1_prime_fun})
-#' @param g2 1, 2, 3, 4, 5 ()see \link{G2_fun}, \link{G2_prime_fun})
+#' @param g2 1, 2, 3, 4, 5 (see \link{G2_fun}, \link{G2_prime_fun})
 #' @param delta Approximation of the indicator function (0 is the indicator function)
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib esreg

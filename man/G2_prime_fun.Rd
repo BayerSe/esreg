@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{G2_prime_fun}
 \alias{G2_prime_fun}
-\title{Specification Function: G2_prime}
+\title{Specification Function}
 \usage{
 G2_prime_fun(z, type)
 }
@@ -19,5 +19,5 @@ G2_prime_fun(z, type)
 }}
 }
 \description{
-Specification Function: G2_prime
+G2_prime
 }

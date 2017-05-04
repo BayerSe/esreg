@@ -7,13 +7,13 @@
 density_quantile_function(y, x, u, alpha, sparsity, bandwidth_type)
 }
 \arguments{
-\item{y}{vector of dependent data}
+\item{y}{Vector of dependent data}
 
-\item{x}{matrix of covariates}
+\item{x}{Matrix of covariates}
 
-\item{u}{quantile residuals}
+\item{u}{Quantile residuals}
 
-\item{alpha}{quantile level}
+\item{alpha}{Quantile of interest}
 
 \item{sparsity}{iid or ind}
 

@@ -7,16 +7,20 @@
 esreg_twostep(formula, data, alpha)
 }
 \arguments{
-\item{formula}{y ~ x1 + x2 + ...}
+\item{formula}{Forumula object, e.g.: y ~ x1 + x2 + ...}
 
-\item{data}{data.frame that stores y and x. Extracted from the enviroment if missing.}
+\item{data}{data.frame that holds the variables. Can be missing.}
 
-\item{alpha}{Quantile index}
+\item{alpha}{Quantile of interest}
+
+\item{...}{additional arguments}
 }
 \description{
-Estimates the expected shortfall in two steps.
+Estimates the expected shortfall in two steps. First a linear quantile regression,
+then a weighted least squares regression. This estimator is much faster than the joint.
+The estimates are, however, often less precise. For more information, see \code{\link{esreg}}.
 }
-\details{
-This estimator is much faster than the
-one-step estimator \link{esreg}. Its estimates are, however, often less precise.
+\seealso{
+\code{\link{vcov.esreg_twostep}} for the covariance estimation and
+\code{\link{summary.esreg_twostep}} for a summary of the regression results
 }

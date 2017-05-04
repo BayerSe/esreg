@@ -1,13 +1,13 @@
-#' Two Step (VaR, ES) Regression
-#'
-#' Estimates the expected shortfall in two steps.
-#'
-#' This estimator is much faster than the
-#' one-step estimator \link{esreg}. Its estimates are, however, often less precise.
-#'
-#' @param formula y ~ x1 + x2 + ...
-#' @param data data.frame that stores y and x. Extracted from the enviroment if missing.
-#' @param alpha Quantile index
+#' @title Two Step (VaR, ES) Regression
+#' @description Estimates the expected shortfall in two steps. First a linear quantile regression,
+#' then a weighted least squares regression. This estimator is much faster than the joint.
+#' The estimates are, however, often less precise. For more information, see \code{\link{esreg}}.
+#' @param formula Forumula object, e.g.: y ~ x1 + x2 + ...
+#' @param data data.frame that holds the variables. Can be missing.
+#' @param alpha Quantile of interest
+#' @param ... additional arguments
+#' @seealso \code{\link{vcov.esreg_twostep}} for the covariance estimation and
+#' \code{\link{summary.esreg_twostep}} for a summary of the regression results
 #' @export
 esreg_twostep <- function(formula, data, alpha) {
 
@@ -57,34 +57,13 @@ print.esreg_twostep <- print.esreg
 #' @export
 fitted.esreg_twostep <- fitted.esreg
 
-#' Estimated covariance of the two-step (VaR, ES) estimator
-#'
-#' Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+#' @title Estimated covariance of the two-step (VaR, ES) estimator
+#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
 #' either using the asymptotic formulas or using the bootstrap.
-#'
-#' @param sparsity Sparsity estimator
-#' \itemize{
-#'   \item iid - Piecewise linear interpolation of the distribution
-#'   \item nid - Hendricks and Koenker sandwich
-#' }
-#' @param cond_var Conditional truncated variance estimator
-#' \itemize{
-#'   \item ind Variance over all negative residuals
-#'   \item scl_N Scaling with the Normal distribution
-#'   \item scl_t Scaling with the t-distribution
-#' }
-#' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
-#' @param bootstrap_method
-#' \itemize{
-#'   \item NULL asymptotic estimator
-#'   \item iid
-#'   \item stationary Politis & Romano (1994)
-#' }
-#' @param B Number of bootstrap iterations
-#' @param block_length Average block length for the stationary bootstrap
+#' @inheritParams vcov.esreg
 #' @export
 vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_type = "Hall-Sheather",
-                       bootstrap_method = NULL, B = 1000, block_length = NULL) {
+                       bootstrap_method = NULL, B = 1000, block_length = NULL, ...) {
   fit <- object
 
   if(is.null(bootstrap_method)) {
@@ -165,6 +144,10 @@ vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandw
   cov
 }
 
+#' @title esreg_twostep summary
+#' @description Summarize details about the regression estimates.
+#' @param object An esreg_twostep object
+#' @param ... Accepts all parameters you can pass to \code{\link{vcov.esreg_twostep}}.
 #' @export
 summary.esreg_twostep <- function(object, ...) {
   fit <- object

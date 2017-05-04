@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{G2_fun}
 \alias{G2_fun}
-\title{Specification Function: G2}
+\title{Specification Function}
 \usage{
 G2_fun(z, type)
 }
@@ -19,5 +19,5 @@ G2_fun(z, type)
 }}
 }
 \description{
-Specification Function: G2
+G2
 }

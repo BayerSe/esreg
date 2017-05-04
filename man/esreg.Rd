@@ -9,26 +9,48 @@ esreg(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho",
   = sqrt(0.1)), gensa_ctrl = list(max.call = 1e+06, max.time = 10, box = 10))
 }
 \arguments{
-\item{formula}{y ~ x1 + x2 + ...}
+\item{formula}{Forumula object, e.g.: y ~ x1 + x2 + ...}
 
-\item{data}{data.frame that stores y and x. Extracted from the enviroment if missing.}
+\item{data}{data.frame that holds the variables. Can be missing.}
 
-\item{alpha}{Quantile index}
+\item{alpha}{Quantile of interest}
 
-\item{g1}{1, 2 (see \link{G1_fun}, \link{G1_prime_fun})}
+\item{g1}{1, [2] (see \link{G1_fun}, \link{G1_prime_fun})}
 
-\item{g2}{1, 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun}, \link{G2_prime_fun})}
+\item{g2}{[1], 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun}, \link{G2_prime_fun})}
 
-\item{b0}{Starting values; if NULL they are obtained from two additional quantile regressions}
+\item{b0}{Starting values for the optimization; if NULL they are obtained from two additional quantile regressions}
 
-\item{target}{The functions to be optimized: either the loss (rho) or the identification function (psi).}
+\item{target}{The functions to be optimized: either the loss [rho] or the identification function (psi). The rho function is strongly recommended.}
 
-\item{method}{one_shot, random_restart or gensa}
+\item{method}{one_shot, [random_restart] or gensa}
 
-\item{random_restart_ctrl}{list: N number of random starting points; M optimize over the M best; sd std dev of the random component}
+\item{random_restart_ctrl}{list: N [1000] number of random starting points; M [10] optimize over the M best; sd [sqrt(0.1)] std dev of the random component}
 
-\item{gensa_ctrl}{Parameters to be passed to GenSA}
+\item{gensa_ctrl}{Parameters to be passed to the GenSA opzimizer}
+}
+\value{
+An esreg object
 }
 \description{
-Joint (VaR, ES) Regression
+Estimates a joint linear regression model for the pair (VaR, ES):
+\deqn{Q_\alpha(Y | X) = X'\beta_q}
+\deqn{ES_\alpha(Y | X) = X'\beta_e}
+}
+\examples{
+# Simulate data
+set.seed(1)
+x <- rchisq(1000, df = 1)
+y <- -x + (1 + 0.1 * x) * rnorm(1000)
+
+# Estimate the model and the covariance
+fit <- esreg(y ~ x, alpha = 0.025)
+summary(object = fit, sparsity = "nid", cond_var = "scl_t")
+}
+\references{
+\href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
+}
+\seealso{
+\code{\link{vcov.esreg}} for the covariance estimation and
+\code{\link{summary.esreg}} for a summary of the regression results
 }

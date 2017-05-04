@@ -13,7 +13,7 @@ esr_rho_lp(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0)
 
 \item{x}{Matrix of covariates. Note: intercept needs to be added manually}
 
-\item{alpha}{Quantile index}
+\item{alpha}{Quantile of interest}
 
 \item{g1}{1, 2 (see \link{G1_fun})}
 
@@ -22,5 +22,5 @@ esr_rho_lp(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0)
 \item{delta}{Approximation of the indicator function (0 is the indicator function)}
 }
 \description{
-Joint (VaR, ES) loss for a linear predictor
+Returns the loss at b
 }

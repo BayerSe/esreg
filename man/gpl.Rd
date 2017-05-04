@@ -11,9 +11,9 @@ gpl(r, q, alpha, g = function(x) x, return_mean = TRUE)
 
 \item{q}{Vector of quantiles}
 
-\item{alpha}{Quantile index}
+\item{alpha}{Quantile of interst}
 
-\item{g}{Nondecreasing function}
+\item{g}{A nondecreasing function}
 
 \item{return_mean}{If TRUE returns the average tick loss, else the individual values}
 }
