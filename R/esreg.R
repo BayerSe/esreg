@@ -48,6 +48,15 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   # Start the timer
   t0 <- Sys.time()
 
+  # Store old random state
+  if (!exists(".Random.seed", mode="numeric", envir=globalenv())) {
+    sample(NA)
+  }
+  oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv());
+
+  # Set a new seed for reproducibility
+  set.seed(1)
+
   # Extract the formula
   if (missing(data))
     data <- environment(formula)
@@ -117,6 +126,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
       noise <- matrix(stats::rnorm(2*k * random_restart_ctrl$N, sd = random_restart_ctrl$sd),
                       nrow = random_restart_ctrl$N)
       rand_start <- sweep(noise, MARGIN = 2, b0, "+")
+      set.seed(Sys.time())  # Reset the seed
 
       # If G2 is 1, 2, 3 and we do not shift the data, ensure that x'be < 0 by shifting the
       # intercepts of the starting values
@@ -141,7 +151,6 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
       if (!("GenSA" %in% rownames(utils::installed.packages()))) {
         stop("GenSA needed for this function to work. Please install it.")
       }
-      set.seed(1)
       fit <- GenSA::GenSA(par = b0, fn = fun2,
                           lower = b0 - rep(gensa_ctrl$box, 2 * k),
                           upper = b0 + rep(gensa_ctrl$box, 2 * k),
@@ -161,6 +170,9 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
     b0[1] <- b0[1] + max_y
     b0[k + 1] <- b0[k + 1] + max_y
   }
+
+  # Reset random seed to the old state
+  assign(".Random.seed", oldSeed, envir=globalenv());
 
   # Return results
   structure(list(call = call, formula = formula,
