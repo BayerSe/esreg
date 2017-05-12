@@ -5,8 +5,9 @@
 \title{Joint (VaR, ES) Regression}
 \usage{
 esreg(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho",
-  method = "random_restart", random_restart_ctrl = list(M = 10, N = 1000, sd
-  = sqrt(0.1)), gensa_ctrl = list(max.call = 1e+06, max.time = 10, box = 10))
+  method = "random_restart", shift_data = TRUE,
+  random_restart_ctrl = list(M = 10, N = 1000, sd = sqrt(0.1)),
+  gensa_ctrl = list(max.call = 1e+06, max.time = 10, box = 10))
 }
 \arguments{
 \item{formula}{Forumula object, e.g.: y ~ x1 + x2 + ...}
@@ -24,6 +25,10 @@ esreg(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho",
 \item{target}{The functions to be optimized: either the loss [rho] or the identification function (psi). The rho function is strongly recommended.}
 
 \item{method}{one_shot, [random_restart] or gensa}
+
+\item{shift_data}{If g2 is 1, 2 or 3, we can either estimate the model without or with
+shifting of the Y variable. We either risk biased estimates (no shifting) or slightly different estimates due
+to the changed loss function (shifting). Defaults to shifting to avoid biased estimates.}
 
 \item{random_restart_ctrl}{list: N [1000] number of random starting points; M [10] optimize over the M best; sd [sqrt(0.1)] std dev of the random component}
 

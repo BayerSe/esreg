@@ -10,6 +10,9 @@
 #' @param b0 Starting values for the optimization; if NULL they are obtained from two additional quantile regressions
 #' @param target The functions to be optimized: either the loss [rho] or the identification function (psi). The rho function is strongly recommended.
 #' @param method one_shot, [random_restart] or gensa
+#' @param shift_data If g2 is 1, 2 or 3, we can either estimate the model without or with
+#' shifting of the Y variable. We either risk biased estimates (no shifting) or slightly different estimates due
+#' to the changed loss function (shifting). Defaults to shifting to avoid biased estimates.
 #' @param random_restart_ctrl list: N [1000] number of random starting points; M [10] optimize over the M best; sd [sqrt(0.1)] std dev of the random component
 #' @param gensa_ctrl Parameters to be passed to the GenSA opzimizer
 #' @return An esreg object
@@ -27,7 +30,7 @@
 #' @references \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
 #' @export
 esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho", method = "random_restart",
-                  random_restart_ctrl = list(M = 10, N = 1000, sd = sqrt(0.1)),
+                  shift_data = TRUE, random_restart_ctrl = list(M = 10, N = 1000, sd = sqrt(0.1)),
                   gensa_ctrl = list(max.call = 1e+06, max.time = 10, box = 10)) {
 
   # Check the inputs
@@ -64,7 +67,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   optim_ctrol <- list(maxit = 10000, reltol = .Machine$double.eps^(1/2))
 
   # Transform the data
-  if (g2 %in% c(1, 2, 3)) {
+  if ((shift_data == TRUE) & (g2 %in% c(1, 2, 3))) {
     max_y <- max(y)
     y <- y - max_y
   }
@@ -114,6 +117,17 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
       noise <- matrix(stats::rnorm(2*k * random_restart_ctrl$N, sd = random_restart_ctrl$sd),
                       nrow = random_restart_ctrl$N)
       rand_start <- sweep(noise, MARGIN = 2, b0, "+")
+
+      # If G2 is 1, 2, 3 and we do not shift the data, ensure that x'be < 0 by shifting the
+      # intercepts of the starting values
+      if ((shift_data == FALSE) & (g2 %in% c(1, 2, 3))) {
+        max_xe <- sapply(1:nrow(rand_start), function(i) {
+          max(x %*% rand_start[i, (k+1):(2*k)])
+        })
+        rand_start[,k+1] <- rand_start[,k+1] - (max_xe + 0.1) * (max_xe > 0)
+      }
+
+      # Evalaute losses
       rand_start <- cbind(apply(rand_start, 1, fun2), rand_start)
 
       # Optimize over the M best and the original starting value
@@ -140,7 +154,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
   names(b) <- c(paste0("bq_", 1:k - 1), paste0("be_", 1:k - 1))
 
   # Undo the transformation
-  if (g2 %in% c(1, 2, 3)) {
+  if ((shift_data == TRUE) & (g2 %in% c(1, 2, 3))) {
     y <- y + max_y
     b[1] <- b[1] + max_y
     b[k + 1] <- b[k + 1] + max_y
@@ -150,7 +164,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
 
   # Return results
   structure(list(call = call, formula = formula,
-                 target = target, method = method, g1 = g1, g2 = g2,
+                 target = target, method = method, g1 = g1, g2 = g2, shift_data = shift_data,
                  alpha = alpha, y = y, x = x,
                  coefficients = b,
                  coefficients_q = b[1:k],
@@ -222,7 +236,7 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
     coefficients_e <- fit$coefficients_e
 
     # Transform the data and coefficients
-    if (fit$g2 %in% c(1, 2, 3)) {
+    if ((fit$shift_data == TRUE) & (fit$g2 %in% c(1, 2, 3))) {
       max_y <- max(y)
       y <- y - max_y
       coefficients_q[1] <- coefficients_q[1] - max_y
