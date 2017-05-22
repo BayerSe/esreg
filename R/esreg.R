@@ -9,7 +9,7 @@
 #' @param g2 [1], 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun}, \link{G2_prime_fun})
 #' @param b0 Starting values for the optimization; if NULL they are obtained from two additional quantile regressions
 #' @param target The functions to be optimized: either the loss [rho] or the identification function (psi). The rho function is strongly recommended.
-#' @param method one_shot, [random_restart] or gensa
+#' @param method [random_restart] or gensa
 #' @param shift_data If g2 is 1, 2 or 3, we can either estimate the model without or with
 #' shifting of the Y variable. We either risk biased estimates (no shifting) or slightly different estimates due
 #' to the changed loss function (shifting). Defaults to shifting to avoid biased estimates.
@@ -42,8 +42,8 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
     stop("alpha not in (0, 1)")
   if (!(target %in% c("rho", "psi")))
     stop("target can be rho or psi")
-  if (!(method %in% c("one_shot", "random_restart", "gensa")))
-    stop("method can be one_shot, random_restart or gensa")
+  if (!(method %in% c("random_restart", "gensa")))
+    stop("method can be random_restart or gensa")
 
   # Start the timer
   t0 <- Sys.time()
@@ -102,26 +102,17 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
 
   # Target functions
   if (target == "rho") {
-    fun1 <- function(b) suppressWarnings(esr_rho_lp(b = c(b0_q, b), y = y, x = x, alpha = alpha, g1 = g1, g2 = g2))
-    fun2 <- function(b) suppressWarnings(esr_rho_lp(b = b, y = y, x = x, alpha = alpha, g1 = g1, g2 = g2))
+    fun <- function(b) suppressWarnings(esr_rho_lp(b = b, y = y, x = x, alpha = alpha, g1 = g1, g2 = g2))
   } else if (target == "psi") {
-    fun1 <- function(b) suppressWarnings(esr_psi_lp(b = c(b0_q, b), y = y, x = x, alpha = alpha, g1 = g1, g2 = g2))
-    fun2 <- function(b) suppressWarnings(esr_psi_lp(b = b, y = y, x = x, alpha = alpha, g1 = g1, g2 = g2))
+    fun <- function(b) suppressWarnings(esr_psi_lp(b = b, y = y, x = x, alpha = alpha, g1 = g1, g2 = g2))
   }
 
   # Optimize the model
   if (k == 1) {
-    fit <- stats::optim(par = b0, fn = fun2, method = "Nelder-Mead", control = optim_ctrol)
+    fit <- stats::optim(par = b0, fn = fun, method = "Nelder-Mead", control = optim_ctrol)
     method <- "direct_optimization"
   } else {
-    if (method == "one_shot") {
-      # Refine the shortfall starting values
-      fit0 <- stats::optim(par = b0_e, fn = fun1, method = "Nelder-Mead",
-                           control = optim_ctrol)
-      b0 <- c(b0_q, fit0$par)
-      fit <- stats::optim(par = b0, fn = fun2, method = "Nelder-Mead",
-                          control = optim_ctrol)
-    } else if (method == "random_restart") {
+    if (method == "random_restart") {
       # Evaluate the N random starting points
       noise <- matrix(stats::rnorm(2*k * random_restart_ctrl$N, sd = random_restart_ctrl$sd),
                       nrow = random_restart_ctrl$N)
@@ -138,12 +129,12 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
       }
 
       # Evalaute losses
-      rand_start <- cbind(apply(rand_start, 1, fun2), rand_start)
+      rand_start <- cbind(apply(rand_start, 1, fun), rand_start)
 
       # Optimize over the M best and the original starting value
       start_values <- rbind(rand_start[order(rand_start[, 1])[1:random_restart_ctrl$M], -1], b0)
       fits <- apply(start_values, 1, function(b)
-        stats::optim(par = b, fn = fun2, method = "Nelder-Mead", control = optim_ctrol))
+        stats::optim(par = b, fn = fun, method = "Nelder-Mead", control = optim_ctrol))
 
       # Find the best fit
       fit <- fits[[which.min(sapply(fits, "[[", "value"))]]
@@ -151,7 +142,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
       if (!("GenSA" %in% rownames(utils::installed.packages()))) {
         stop("GenSA needed for this function to work. Please install it.")
       }
-      fit <- GenSA::GenSA(par = b0, fn = fun2,
+      fit <- GenSA::GenSA(par = b0, fn = fun,
                           lower = b0 - rep(gensa_ctrl$box, 2 * k),
                           upper = b0 + rep(gensa_ctrl$box, 2 * k),
                           control = gensa_ctrl[!(names(gensa_ctrl) %in% c("box"))])
@@ -307,7 +298,9 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
     # Use the one_shot estimation approach for speed
     b <- apply(idx, 2, function(id) {
       fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
-                    alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2, method = 'one_shot')
+                    alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2,
+                    method = 'random_restart',
+                    random_restart_ctrl = list(M = 1, N = 1))
       fitb$coefficients
     })
 

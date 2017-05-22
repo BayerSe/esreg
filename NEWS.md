@@ -1,3 +1,6 @@
+# 0.1.6
+Remove the one_shot estimation method: use random_restart instead.
+
 # 0.1.4
 Added an estimator of the asymptotic covariance of the two-step estimator
 

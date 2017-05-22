@@ -24,7 +24,7 @@ esreg(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho",
 
 \item{target}{The functions to be optimized: either the loss [rho] or the identification function (psi). The rho function is strongly recommended.}
 
-\item{method}{one_shot, [random_restart] or gensa}
+\item{method}{[random_restart] or gensa}
 
 \item{shift_data}{If g2 is 1, 2 or 3, we can either estimate the model without or with
 shifting of the Y variable. We either risk biased estimates (no shifting) or slightly different estimates due
