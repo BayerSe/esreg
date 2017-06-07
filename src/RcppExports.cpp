@@ -161,3 +161,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
+static const R_CallMethodDef CallEntries[] = {
+    {"esreg_l_esreg_covariance", (DL_FUNC) &esreg_l_esreg_covariance, 9},
+    {"esreg_l_esreg_twostep_covariance", (DL_FUNC) &esreg_l_esreg_twostep_covariance, 6},
+    {"esreg_stationary_bootstrap_indices", (DL_FUNC) &esreg_stationary_bootstrap_indices, 3},
+    {"esreg_G1_fun", (DL_FUNC) &esreg_G1_fun, 2},
+    {"esreg_G1_prime_fun", (DL_FUNC) &esreg_G1_prime_fun, 2},
+    {"esreg_G2_curly_fun", (DL_FUNC) &esreg_G2_curly_fun, 2},
+    {"esreg_G2_fun", (DL_FUNC) &esreg_G2_fun, 2},
+    {"esreg_G2_prime_fun", (DL_FUNC) &esreg_G2_prime_fun, 2},
+    {"esreg_G_vec", (DL_FUNC) &esreg_G_vec, 3},
+    {"esreg_esr_rho_lp", (DL_FUNC) &esreg_esr_rho_lp, 7},
+    {"esreg_esr_psi_lp", (DL_FUNC) &esreg_esr_psi_lp, 7},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_esreg(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
+}

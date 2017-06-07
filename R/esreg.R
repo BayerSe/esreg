@@ -206,6 +206,7 @@ fitted.esreg <- function(object, ...) {
 #'   \item [ind] Variance over all negative residuals
 #'   \item scl_N Scaling with the Normal distribution
 #'   \item scl_t Scaling with the t-distribution
+#'   \item scl_st Scaling with the skewed t-distribution
 #' }
 #' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
 #' @param bootstrap_method
@@ -225,8 +226,8 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
   if(is.null(bootstrap_method)) {
     if(!(sparsity %in% c("iid", "nid")))
       stop("sparsity can be iid or nid")
-    if(!(cond_var %in% c('ind', 'scl_N', 'scl_t')))
-      stop('cond_var can be ind, scl_N or scl_t')
+    if(!(cond_var %in% c("ind", "scl_N", "scl_t", "scl_st")))
+      stop("cond_var can be ind, scl_N, scl_t or scl_st")
     if(!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
       stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
 
@@ -300,7 +301,7 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
       fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
                     alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2,
                     method = 'random_restart',
-                    random_restart_ctrl = list(M = 1, N = 1))
+                    random_restart_ctrl = list(M = 1, N = 1, sd=0))
       fitb$coefficients
     })
 

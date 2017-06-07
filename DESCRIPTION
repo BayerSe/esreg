@@ -1,14 +1,14 @@
 Package: esreg
 Type: Package
 Title: Joint (VaR, ES) Regression
-Version: 0.1.6
-Date: 2017-05-22
+Version: 0.1.7
+Date: 2017-06-07
 Authors@R: c(person('Sebastian', 'Bayer', email='sebatian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
              person('Timo', 'Dimitriadis', role='aut'))
 Description: Simultaneous modeling of the quantile and the Expected Shortfall of a response variable given a set of covariates.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: stats, utils, Rcpp, quantreg, GenSA, maxLik, SparseM, MatrixModels, methods
+Imports: stats, utils, Rcpp, quantreg, GenSA, SparseM, MatrixModels, methods
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 6.0.1

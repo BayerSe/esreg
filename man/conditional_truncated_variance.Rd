@@ -4,15 +4,19 @@
 \alias{conditional_truncated_variance}
 \title{Conditional truncated variance}
 \usage{
-conditional_truncated_variance(y, x, approach)
+conditional_truncated_variance(y, x, approach, approximate = TRUE)
 }
 \arguments{
 \item{y}{Vector of dependent data}
 
-\item{x}{Matrix of covariates}
+\item{x}{Matrix of covariates including the intercept}
 
-\item{approach}{ind, scl_N or scl_t}
+\item{approach}{ind, scl_N, scl_t or scl_st}
+
+\item{approximate}{Concerns the scl_st estimator: approximate the time consuming
+integration via splines.}
 }
 \description{
-Estimate the conditional truncated variance of y given x when y is truncated at 0.
+Estimate the conditional truncated variance of y given x
+and given y <= 0.
 }

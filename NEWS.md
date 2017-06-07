@@ -1,3 +1,6 @@
+# 0.1.7
+Add estimation of the truncated conditional variance using the skewed Student-t distribution.
+
 # 0.1.6
 Remove the one_shot estimation method: use random_restart instead.
 

@@ -22,6 +22,7 @@
   \item [ind] Variance over all negative residuals
   \item scl_N Scaling with the Normal distribution
   \item scl_t Scaling with the t-distribution
+  \item scl_st Scaling with the skewed t-distribution
 }}
 
 \item{bandwidth_type}{Bofinger, Chamberlain or Hall-Sheather}
