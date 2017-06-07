@@ -112,7 +112,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
     fit <- stats::optim(par = b0, fn = fun, method = "Nelder-Mead", control = optim_ctrol)
     method <- "direct_optimization"
   } else {
-    if (method == "random_restart") {
+    if (tolower(method) == "random_restart") {
       # Evaluate the N random starting points
       noise <- matrix(stats::rnorm(2*k * random_restart_ctrl$N, sd = random_restart_ctrl$sd),
                       nrow = random_restart_ctrl$N)
@@ -138,7 +138,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
 
       # Find the best fit
       fit <- fits[[which.min(sapply(fits, "[[", "value"))]]
-    } else if (method == "gensa") {
+    } else if (tolower(method) == "gensa") {
       if (!("GenSA" %in% rownames(utils::installed.packages()))) {
         stop("GenSA needed for this function to work. Please install it.")
       }

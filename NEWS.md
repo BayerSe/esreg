@@ -1,3 +1,6 @@
+# 0.1.8
+Move GenSA to the optinal packages
+
 # 0.1.7
 Add estimation of the truncated conditional variance using the skewed Student-t distribution.
 
