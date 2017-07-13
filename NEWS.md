@@ -1,5 +1,8 @@
+# 0.1.9
+Replace the random restart optimizer with the iterated local search
+
 # 0.1.8
-Move GenSA to the optinal packages
+Move GenSA to the optional packages
 
 # 0.1.7
 Add estimation of the truncated conditional variance using the skewed Student-t distribution.

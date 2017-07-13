@@ -1,8 +1,8 @@
 Package: esreg
 Type: Package
 Title: Joint (VaR, ES) Regression
-Version: 0.1.8
-Date: 2017-06-07
+Version: 0.1.9
+Date: 2017-07-13
 Authors@R: c(person('Sebastian', 'Bayer', email='sebatian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
              person('Timo', 'Dimitriadis', role='aut'))
 Description: Simultaneous modeling of the quantile and the Expected Shortfall of a response variable given a set of covariates.

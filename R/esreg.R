@@ -3,18 +3,23 @@
 #' \deqn{Q_\alpha(Y | X) = X'\beta_q}
 #' \deqn{ES_\alpha(Y | X) = X'\beta_e}
 #' @param formula Forumula object, e.g.: y ~ x1 + x2 + ...
-#' @param data data.frame that holds the variables. Can be missing.
+#' @param data data.frame that holds the variables.
+#' If missing the data is extracted from the environment.
 #' @param alpha Quantile of interest
 #' @param g1 1, [2] (see \link{G1_fun}, \link{G1_prime_fun})
 #' @param g2 [1], 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun}, \link{G2_prime_fun})
-#' @param b0 Starting values for the optimization; if NULL they are obtained from two additional quantile regressions
-#' @param target The functions to be optimized: either the loss [rho] or the identification function (psi). The rho function is strongly recommended.
-#' @param method [random_restart] or gensa
+#' @param target The functions to be optimized: either the loss [rho] or the identification function (psi).
+#' Optimization of the rho function is strongly recommended.
 #' @param shift_data If g2 is 1, 2 or 3, we can either estimate the model without or with
 #' shifting of the Y variable. We either risk biased estimates (no shifting) or slightly different estimates due
 #' to the changed loss function (shifting). Defaults to shifting to avoid biased estimates.
-#' @param random_restart_ctrl list: N [1000] number of random starting points; M [10] optimize over the M best; sd [sqrt(0.1)] std dev of the random component
-#' @param gensa_ctrl Parameters to be passed to the GenSA opzimizer
+#' @param method iterated local search [ils] or simulated annealing (sa)
+#' @param control A list with control parameters passed to either the ils or sa:
+#' \itemize{
+#'   \item terminate_after: Stop the iterated local search if there is no improvement within max_step consecutive steps
+#'   \item max.time: Maximum running time of the sa optimizer
+#'   \item box: Box around the parameters for the sa optimizer
+#' }
 #' @return An esreg object
 #' @seealso \code{\link{vcov.esreg}} for the covariance estimation and
 #' \code{\link{summary.esreg}} for a summary of the regression results
@@ -29,51 +34,43 @@
 #' summary(object = fit, sparsity = "nid", cond_var = "scl_t")
 #' @references \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
 #' @export
-esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho", method = "random_restart",
-                  shift_data = TRUE, random_restart_ctrl = list(M = 10, N = 1000, sd = sqrt(0.1)),
-                  gensa_ctrl = list(max.call = 1e+06, max.time = 10, box = 10)) {
-
-  # Check the inputs
-  if (!(g1 %in% c(1, 2)))
-    stop("G1 can be 1 or 2.")
-  if (!(g2 %in% c(1, 2, 3, 4, 5)))
-    stop("G2 can be 1, 2, 3, 4 or 5.")
-  if ((alpha < 0) | (1 < alpha))
-    stop("alpha not in (0, 1)")
-  if (!(target %in% c("rho", "psi")))
-    stop("target can be rho or psi")
-  if (!(method %in% c("random_restart", "gensa")))
-    stop("method can be random_restart or gensa")
+esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_data = TRUE,
+                  method = "ils", control = list(terminate_after = 10, max.time = 10, box = 10)) {
 
   # Start the timer
   t0 <- Sys.time()
 
-  # Store old random state
-  if (!exists(".Random.seed", mode="numeric", envir=globalenv())) {
-    sample(NA)
-  }
-  oldSeed <- get(".Random.seed", mode="numeric", envir=globalenv());
-
-  # Set a new seed for reproducibility
-  set.seed(1)
+  # Check the inputs parameters
+  if (!(g1 %in% c(1, 2))) stop("G1 can be 1 or 2.")
+  if (!(g2 %in% c(1, 2, 3, 4, 5))) stop("G2 can be 1, 2, 3, 4 or 5.")
+  if ((alpha < 0) | (1 < alpha)) stop("alpha not in (0, 1)")
+  if (!(target %in% c("rho", "psi")))
+    stop("target can be rho or psi.")
+  if (!(method %in% c("ils", "sa")))
+    stop("method can be ils or sa.")
 
   # Extract the formula
-  if (missing(data))
+  if (missing(data)) {}
     data <- environment(formula)
   call <- match.call()
   mf <- stats::model.frame(formula = formula, data = data)
   x <- stats::model.matrix(attr(mf, "terms"), data = mf)
   y <- stats::model.response(mf)
+  k <- ncol(x)
 
-  # Check the data
+  # Check the input data
   if (any(is.na(y)) | any(is.na(x)))
     stop("Data contains NAs!")
   if (!(all(is.finite(y)) & all(is.finite(x))))
     stop("Not all values are finite!")
+  if (length(y) != nrow(x))
+    stop("Dimensions of y and x do not match!")
 
-  # Set some variables
-  k <- ncol(x)
-  optim_ctrol <- list(maxit = 10000, reltol = .Machine$double.eps^(1/2))
+  # Store old random state and set a new seed for reproducibility
+  if (!exists(".Random.seed", mode = "numeric", envir = globalenv()))
+    sample(NA)
+  oldSeed <- get(".Random.seed", mode = "numeric", envir = globalenv());
+  set.seed(1)
 
   # Transform the data
   if ((shift_data == TRUE) & (g2 %in% c(1, 2, 3))) {
@@ -81,72 +78,63 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
     y <- y - max_y
   }
 
-  # Find starting values
-  if (is.null(b0)) {
-    if (k == 1) {
-      q <- stats::quantile(y, p = alpha, type = 8)
-      b0 <- as.numeric(c(q, mean(y[y <= q])))
-    } else {
-      e <- -stats::dnorm(stats::qnorm(alpha))/alpha  # Match quantile and expected shortfall
-      alpha_tilde <- stats::uniroot(function(x) stats::qnorm(x) - e, c(0, alpha))$root
-      b0 <- as.vector(quantreg::rq(y ~ x - 1, tau = c(alpha, alpha_tilde))$coef)
-    }
-  } else {
-    if (length(b0) != 2 * k)
-      stop("Length of b0 does not match to k!")
-  }
-
-  # Split the starting vector
-  b0_q <- b0[1:k]
-  b0_e <- b0[(k + 1):(2 * k)]
-
-  # Target functions
+  # Set the target function
   if (target == "rho") {
     fun <- function(b) suppressWarnings(esr_rho_lp(b = b, y = y, x = x, alpha = alpha, g1 = g1, g2 = g2))
   } else if (target == "psi") {
     fun <- function(b) suppressWarnings(esr_psi_lp(b = b, y = y, x = x, alpha = alpha, g1 = g1, g2 = g2))
   }
 
+  # Find starting values
+  # Match quantile and expected shortfall levels
+  e <- -stats::dnorm(stats::qnorm(alpha))/alpha
+  alpha_tilde <- stats::uniroot(function(x) stats::qnorm(x) - e, c(0, alpha))$root
+  # Fit the quantile regression
+  fit_qr <- suppressWarnings(quantreg::rq(y ~ x - 1, tau = c(alpha, alpha_tilde)))
+  # Get standard errors for the perturbation
+  qr_sum <- suppressWarnings(summary(fit_qr, se="iid"))
+  se <- c(qr_sum[[1]]$coefficients[,2], qr_sum[[2]]$coefficients[,2])
+  # Store the coefficient estimates
+  b0 <- as.vector(fit_qr$coef)
+
   # Optimize the model
-  if (k == 1) {
-    fit <- stats::optim(par = b0, fn = fun, method = "Nelder-Mead", control = optim_ctrol)
-    method <- "direct_optimization"
-  } else {
-    if (tolower(method) == "random_restart") {
-      # Evaluate the N random starting points
-      noise <- matrix(stats::rnorm(2*k * random_restart_ctrl$N, sd = random_restart_ctrl$sd),
-                      nrow = random_restart_ctrl$N)
-      rand_start <- sweep(noise, MARGIN = 2, b0, "+")
-      set.seed(Sys.time())  # Reset the seed
+  if (tolower(method) == "ils") { ## Iterated local search
+    # Initial optimization
+    fit <- try(stats::optim(par = b0, fn = fun, method = "Nelder-Mead"), silent = TRUE)
 
-      # If G2 is 1, 2, 3 and we do not shift the data, ensure that x'be < 0 by shifting the
-      # intercepts of the starting values
-      if ((shift_data == FALSE) & (g2 %in% c(1, 2, 3))) {
-        max_xe <- sapply(1:nrow(rand_start), function(i) {
-          max(x %*% rand_start[i, (k+1):(2*k)])
-        })
-        rand_start[,k+1] <- rand_start[,k+1] - (max_xe + 0.1) * (max_xe > 0)
+    # Counts the iterations without decrease of the loss
+    counter <- 0
+    while (counter < control$terminate_after) {
+      # Perturbe b
+      bt <- fit$par + stats::rnorm(2*k, sd=se)
+
+      # If G2 is 1, 2, 3 and we do not shift the data, ensure that x'be < 0 by moving the es intercept
+      if ((!shift_data) & (g2 %in% c(1, 2, 3))) {
+        max_xe <- max(x %*% bt[(k+1):(2*k)])
+        bt[k+1] <- bt[k+1] - (max_xe + 0.1) * (max_xe > 0)
       }
 
-      # Evalaute losses
-      rand_start <- cbind(apply(rand_start, 1, fun), rand_start)
+      # Fit the model with the perturbed parameters
+      tmp_fit <- try(stats::optim(par = bt, fn = fun, method = "Nelder-Mead"), silent = TRUE)
 
-      # Optimize over the M best and the original starting value
-      start_values <- rbind(rand_start[order(rand_start[, 1])[1:random_restart_ctrl$M], -1], b0)
-      fits <- apply(start_values, 1, function(b)
-        stats::optim(par = b, fn = fun, method = "Nelder-Mead", control = optim_ctrol))
-
-      # Find the best fit
-      fit <- fits[[which.min(sapply(fits, "[[", "value"))]]
-    } else if (tolower(method) == "gensa") {
-      if (!("GenSA" %in% rownames(utils::installed.packages()))) {
-        stop("GenSA needed for this function to work. Please install it.")
+      # Replace the fit if the new loss is smaller than the old. Otherwise increase the counter.
+      if (!inherits(tmp_fit, "try-error")) {
+        if (tmp_fit$value < fit$value) {
+          fit <- tmp_fit
+          counter <- 0
+        } else {
+          counter <- counter + 1
+        }
       }
-      fit <- GenSA::GenSA(par = b0, fn = fun,
-                          lower = b0 - rep(gensa_ctrl$box, 2 * k),
-                          upper = b0 + rep(gensa_ctrl$box, 2 * k),
-                          control = gensa_ctrl[!(names(gensa_ctrl) %in% c("box"))])
     }
+  } else if (tolower(method) == "sa") {  ## Simmulated annealing
+    if (!("GenSA" %in% rownames(utils::installed.packages()))) {
+      stop("GenSA needed for this function to work. Please install it.")
+    }
+    fit <- GenSA::GenSA(par = b0, fn = fun,
+                        lower = b0 - rep(control$box, 2 * k),
+                        upper = b0 + rep(control$box, 2 * k),
+                        control = list(max.time = control$max.time))
   }
 
   # Set names of the parameters
@@ -162,13 +150,13 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "r
     b0[k + 1] <- b0[k + 1] + max_y
   }
 
-  # Reset random seed to the old state
+  # Reset the random seed to the old state
   assign(".Random.seed", oldSeed, envir=globalenv());
 
   # Return results
   structure(list(call = call, formula = formula,
                  target = target, method = method, g1 = g1, g2 = g2, shift_data = shift_data,
-                 alpha = alpha, y = y, x = x,
+                 alpha = alpha, y = y, x = x, b0 = b0,
                  coefficients = b,
                  coefficients_q = b[1:k],
                  coefficients_e = b[(k + 1):(2 * k)],
@@ -300,8 +288,7 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
     b <- apply(idx, 2, function(id) {
       fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
                     alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2,
-                    method = 'random_restart',
-                    random_restart_ctrl = list(M = 1, N = 1, sd=0))
+                    method = "ils", control=list(terminate_after = 0))
       fitb$coefficients
     })
 

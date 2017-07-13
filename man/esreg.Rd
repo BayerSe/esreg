@@ -4,15 +4,15 @@
 \alias{esreg}
 \title{Joint (VaR, ES) Regression}
 \usage{
-esreg(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho",
-  method = "random_restart", shift_data = TRUE,
-  random_restart_ctrl = list(M = 10, N = 1000, sd = sqrt(0.1)),
-  gensa_ctrl = list(max.call = 1e+06, max.time = 10, box = 10))
+esreg(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho",
+  shift_data = TRUE, method = "ils", control = list(terminate_after = 10,
+  max.time = 10, box = 10))
 }
 \arguments{
 \item{formula}{Forumula object, e.g.: y ~ x1 + x2 + ...}
 
-\item{data}{data.frame that holds the variables. Can be missing.}
+\item{data}{data.frame that holds the variables.
+If missing the data is extracted from the environment.}
 
 \item{alpha}{Quantile of interest}
 
@@ -20,19 +20,21 @@ esreg(formula, data, alpha, g1 = 2L, g2 = 1L, b0 = NULL, target = "rho",
 
 \item{g2}{[1], 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun}, \link{G2_prime_fun})}
 
-\item{b0}{Starting values for the optimization; if NULL they are obtained from two additional quantile regressions}
-
-\item{target}{The functions to be optimized: either the loss [rho] or the identification function (psi). The rho function is strongly recommended.}
-
-\item{method}{[random_restart] or gensa}
+\item{target}{The functions to be optimized: either the loss [rho] or the identification function (psi).
+Optimization of the rho function is strongly recommended.}
 
 \item{shift_data}{If g2 is 1, 2 or 3, we can either estimate the model without or with
 shifting of the Y variable. We either risk biased estimates (no shifting) or slightly different estimates due
 to the changed loss function (shifting). Defaults to shifting to avoid biased estimates.}
 
-\item{random_restart_ctrl}{list: N [1000] number of random starting points; M [10] optimize over the M best; sd [sqrt(0.1)] std dev of the random component}
+\item{method}{iterated local search [ils] or simulated annealing (sa)}
 
-\item{gensa_ctrl}{Parameters to be passed to the GenSA opzimizer}
+\item{control}{A list with control parameters passed to either the ils or sa:
+\itemize{
+  \item terminate_after: Stop the iterated local search if there is no improvement within max_step consecutive steps
+  \item max.time: Maximum running time of the sa optimizer
+  \item box: Box around the parameters for the sa optimizer
+}}
 }
 \value{
 An esreg object
