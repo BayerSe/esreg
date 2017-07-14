@@ -1,3 +1,6 @@
+# 0.2.0
+Add the semi-parametric estimator of the truncated conditional variance
+
 # 0.1.9
 Replace the random restart optimizer with the iterated local search
 

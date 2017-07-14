@@ -31,7 +31,7 @@
 #'
 #' # Estimate the model and the covariance
 #' fit <- esreg(y ~ x, alpha = 0.025)
-#' summary(object = fit, sparsity = "nid", cond_var = "scl_t")
+#' summary(object = fit, sparsity = "nid", cond_var = "scl_sp")
 #' @references \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
 #' @export
 esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_data = TRUE,
@@ -192,9 +192,8 @@ fitted.esreg <- function(object, ...) {
 #' @param cond_var Conditional truncated variance estimator
 #' \itemize{
 #'   \item [ind] Variance over all negative residuals
-#'   \item scl_N Scaling with the Normal distribution
-#'   \item scl_t Scaling with the t-distribution
-#'   \item scl_st Scaling with the skewed t-distribution
+#'   \item scl_N Scaling with the normal distribution
+#'   \item scl_sp Scaling with the kernel density function
 #' }
 #' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
 #' @param bootstrap_method
@@ -214,8 +213,8 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
   if(is.null(bootstrap_method)) {
     if(!(sparsity %in% c("iid", "nid")))
       stop("sparsity can be iid or nid")
-    if(!(cond_var %in% c("ind", "scl_N", "scl_t", "scl_st")))
-      stop("cond_var can be ind, scl_N, scl_t or scl_st")
+    if(!(cond_var %in% c("ind", "scl_N", "scl_sp")))
+      stop("cond_var can be ind, scl_N or scl_sp")
     if(!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
       stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
 

@@ -52,7 +52,7 @@ y <- -x + (1 + 0.1 * x) * rnorm(1000)
 
 # Estimate the model and the covariance
 fit <- esreg(y ~ x, alpha = 0.025)
-summary(object = fit, sparsity = "nid", cond_var = "scl_t")
+summary(object = fit, sparsity = "nid", cond_var = "scl_sp")
 }
 \references{
 \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
