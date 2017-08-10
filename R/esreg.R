@@ -153,6 +153,10 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_
   # Reset the random seed to the old state
   assign(".Random.seed", oldSeed, envir=globalenv());
 
+  # Compute the fitted values
+  fitted.values <- data.frame(q = x %*% b[1:k],
+                              e = x %*% b[(k + 1):(2 * k)])
+
   # Return results
   structure(list(call = call, formula = formula,
                  target = target, method = method, g1 = g1, g2 = g2, shift_data = shift_data,
@@ -160,6 +164,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_
                  coefficients = b,
                  coefficients_q = b[1:k],
                  coefficients_e = b[(k + 1):(2 * k)],
+                 fitted.values = fitted.values,
                  value = fit$value,
                  time = Sys.time() - t0),
             class = "esreg")
