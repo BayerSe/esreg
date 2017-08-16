@@ -2,15 +2,15 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 l_esreg_covariance <- function(x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha) {
-    .Call('esreg_l_esreg_covariance', PACKAGE = 'esreg', x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
+    .Call('_esreg_l_esreg_covariance', PACKAGE = 'esreg', x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
 }
 
 l_esreg_twostep_covariance <- function(x, xq, xe, density, conditional_variance, alpha) {
-    .Call('esreg_l_esreg_twostep_covariance', PACKAGE = 'esreg', x, xq, xe, density, conditional_variance, alpha)
+    .Call('_esreg_l_esreg_twostep_covariance', PACKAGE = 'esreg', x, xq, xe, density, conditional_variance, alpha)
 }
 
 stationary_bootstrap_indices <- function(n, avg_block_size, B) {
-    .Call('esreg_stationary_bootstrap_indices', PACKAGE = 'esreg', n, avg_block_size, B)
+    .Call('_esreg_stationary_bootstrap_indices', PACKAGE = 'esreg', n, avg_block_size, B)
 }
 
 #' @title Specification Function
@@ -23,7 +23,7 @@ stationary_bootstrap_indices <- function(n, avg_block_size, B) {
 #' }
 #' @export
 G1_fun <- function(z, type) {
-    .Call('esreg_G1_fun', PACKAGE = 'esreg', z, type)
+    .Call('_esreg_G1_fun', PACKAGE = 'esreg', z, type)
 }
 
 #' @title Specification Function
@@ -37,7 +37,7 @@ G1_fun <- function(z, type) {
 #' @export
 #' @export
 G1_prime_fun <- function(z, type) {
-    .Call('esreg_G1_prime_fun', PACKAGE = 'esreg', z, type)
+    .Call('_esreg_G1_prime_fun', PACKAGE = 'esreg', z, type)
 }
 
 #' @title Specification Function
@@ -53,7 +53,7 @@ G1_prime_fun <- function(z, type) {
 #' }
 #' @export
 G2_curly_fun <- function(z, type) {
-    .Call('esreg_G2_curly_fun', PACKAGE = 'esreg', z, type)
+    .Call('_esreg_G2_curly_fun', PACKAGE = 'esreg', z, type)
 }
 
 #' @title Specification Function
@@ -69,7 +69,7 @@ G2_curly_fun <- function(z, type) {
 #' }
 #' @export
 G2_fun <- function(z, type) {
-    .Call('esreg_G2_fun', PACKAGE = 'esreg', z, type)
+    .Call('_esreg_G2_fun', PACKAGE = 'esreg', z, type)
 }
 
 #' @title Specification Function
@@ -85,7 +85,7 @@ G2_fun <- function(z, type) {
 #' }
 #' @export
 G2_prime_fun <- function(z, type) {
-    .Call('esreg_G2_prime_fun', PACKAGE = 'esreg', z, type)
+    .Call('_esreg_G2_prime_fun', PACKAGE = 'esreg', z, type)
 }
 
 #' @title Vectorized call to the G1/G2 functions
@@ -95,7 +95,7 @@ G2_prime_fun <- function(z, type) {
 #' @param type G1: 1-2; G2: 1-5
 #' @export
 G_vec <- function(z, g, type) {
-    .Call('esreg_G_vec', PACKAGE = 'esreg', z, g, type)
+    .Call('_esreg_G_vec', PACKAGE = 'esreg', z, g, type)
 }
 
 #' @title Joint (VaR, ES) loss for a linear predictor
@@ -111,7 +111,7 @@ G_vec <- function(z, g, type) {
 #' @useDynLib esreg
 #' @export
 esr_rho_lp <- function(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0) {
-    .Call('esreg_esr_rho_lp', PACKAGE = 'esreg', b, y, x, alpha, g1, g2, delta)
+    .Call('_esreg_esr_rho_lp', PACKAGE = 'esreg', b, y, x, alpha, g1, g2, delta)
 }
 
 #' @title Indentification function for the pair (VaR, ES) for a linear predictor
@@ -127,6 +127,6 @@ esr_rho_lp <- function(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0) {
 #' @useDynLib esreg
 #' @export
 esr_psi_lp <- function(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0) {
-    .Call('esreg_esr_psi_lp', PACKAGE = 'esreg', b, y, x, alpha, g1, g2, delta)
+    .Call('_esreg_esr_psi_lp', PACKAGE = 'esreg', b, y, x, alpha, g1, g2, delta)
 }
 

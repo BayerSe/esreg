@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // l_esreg_covariance
 arma::mat l_esreg_covariance(arma::mat x, arma::colvec xq, arma::colvec xe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
-RcppExport SEXP esreg_l_esreg_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
+RcppExport SEXP _esreg_l_esreg_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -27,7 +27,7 @@ END_RCPP
 }
 // l_esreg_twostep_covariance
 arma::mat l_esreg_twostep_covariance(arma::mat x, arma::colvec xq, arma::colvec xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
-RcppExport SEXP esreg_l_esreg_twostep_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
+RcppExport SEXP _esreg_l_esreg_twostep_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -43,7 +43,7 @@ END_RCPP
 }
 // stationary_bootstrap_indices
 Rcpp::NumericMatrix stationary_bootstrap_indices(int n, double avg_block_size, int B);
-RcppExport SEXP esreg_stationary_bootstrap_indices(SEXP nSEXP, SEXP avg_block_sizeSEXP, SEXP BSEXP) {
+RcppExport SEXP _esreg_stationary_bootstrap_indices(SEXP nSEXP, SEXP avg_block_sizeSEXP, SEXP BSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -56,7 +56,7 @@ END_RCPP
 }
 // G1_fun
 double G1_fun(double z, int type);
-RcppExport SEXP esreg_G1_fun(SEXP zSEXP, SEXP typeSEXP) {
+RcppExport SEXP _esreg_G1_fun(SEXP zSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -68,7 +68,7 @@ END_RCPP
 }
 // G1_prime_fun
 double G1_prime_fun(double z, int type);
-RcppExport SEXP esreg_G1_prime_fun(SEXP zSEXP, SEXP typeSEXP) {
+RcppExport SEXP _esreg_G1_prime_fun(SEXP zSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,7 +80,7 @@ END_RCPP
 }
 // G2_curly_fun
 double G2_curly_fun(double z, int type);
-RcppExport SEXP esreg_G2_curly_fun(SEXP zSEXP, SEXP typeSEXP) {
+RcppExport SEXP _esreg_G2_curly_fun(SEXP zSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -92,7 +92,7 @@ END_RCPP
 }
 // G2_fun
 double G2_fun(double z, int type);
-RcppExport SEXP esreg_G2_fun(SEXP zSEXP, SEXP typeSEXP) {
+RcppExport SEXP _esreg_G2_fun(SEXP zSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -104,7 +104,7 @@ END_RCPP
 }
 // G2_prime_fun
 double G2_prime_fun(double z, int type);
-RcppExport SEXP esreg_G2_prime_fun(SEXP zSEXP, SEXP typeSEXP) {
+RcppExport SEXP _esreg_G2_prime_fun(SEXP zSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -116,7 +116,7 @@ END_RCPP
 }
 // G_vec
 Rcpp::NumericVector G_vec(Rcpp::NumericVector z, Rcpp::String g, int type);
-RcppExport SEXP esreg_G_vec(SEXP zSEXP, SEXP gSEXP, SEXP typeSEXP) {
+RcppExport SEXP _esreg_G_vec(SEXP zSEXP, SEXP gSEXP, SEXP typeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -129,7 +129,7 @@ END_RCPP
 }
 // esr_rho_lp
 double esr_rho_lp(const arma::colvec& b, const arma::colvec& y, const arma::mat& x, double alpha, int g1, int g2, double delta);
-RcppExport SEXP esreg_esr_rho_lp(SEXP bSEXP, SEXP ySEXP, SEXP xSEXP, SEXP alphaSEXP, SEXP g1SEXP, SEXP g2SEXP, SEXP deltaSEXP) {
+RcppExport SEXP _esreg_esr_rho_lp(SEXP bSEXP, SEXP ySEXP, SEXP xSEXP, SEXP alphaSEXP, SEXP g1SEXP, SEXP g2SEXP, SEXP deltaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -146,7 +146,7 @@ END_RCPP
 }
 // esr_psi_lp
 double esr_psi_lp(const arma::colvec& b, const arma::colvec& y, const arma::mat& x, double alpha, int g1, int g2, double delta);
-RcppExport SEXP esreg_esr_psi_lp(SEXP bSEXP, SEXP ySEXP, SEXP xSEXP, SEXP alphaSEXP, SEXP g1SEXP, SEXP g2SEXP, SEXP deltaSEXP) {
+RcppExport SEXP _esreg_esr_psi_lp(SEXP bSEXP, SEXP ySEXP, SEXP xSEXP, SEXP alphaSEXP, SEXP g1SEXP, SEXP g2SEXP, SEXP deltaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -163,17 +163,17 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"esreg_l_esreg_covariance", (DL_FUNC) &esreg_l_esreg_covariance, 9},
-    {"esreg_l_esreg_twostep_covariance", (DL_FUNC) &esreg_l_esreg_twostep_covariance, 6},
-    {"esreg_stationary_bootstrap_indices", (DL_FUNC) &esreg_stationary_bootstrap_indices, 3},
-    {"esreg_G1_fun", (DL_FUNC) &esreg_G1_fun, 2},
-    {"esreg_G1_prime_fun", (DL_FUNC) &esreg_G1_prime_fun, 2},
-    {"esreg_G2_curly_fun", (DL_FUNC) &esreg_G2_curly_fun, 2},
-    {"esreg_G2_fun", (DL_FUNC) &esreg_G2_fun, 2},
-    {"esreg_G2_prime_fun", (DL_FUNC) &esreg_G2_prime_fun, 2},
-    {"esreg_G_vec", (DL_FUNC) &esreg_G_vec, 3},
-    {"esreg_esr_rho_lp", (DL_FUNC) &esreg_esr_rho_lp, 7},
-    {"esreg_esr_psi_lp", (DL_FUNC) &esreg_esr_psi_lp, 7},
+    {"_esreg_l_esreg_covariance", (DL_FUNC) &_esreg_l_esreg_covariance, 9},
+    {"_esreg_l_esreg_twostep_covariance", (DL_FUNC) &_esreg_l_esreg_twostep_covariance, 6},
+    {"_esreg_stationary_bootstrap_indices", (DL_FUNC) &_esreg_stationary_bootstrap_indices, 3},
+    {"_esreg_G1_fun", (DL_FUNC) &_esreg_G1_fun, 2},
+    {"_esreg_G1_prime_fun", (DL_FUNC) &_esreg_G1_prime_fun, 2},
+    {"_esreg_G2_curly_fun", (DL_FUNC) &_esreg_G2_curly_fun, 2},
+    {"_esreg_G2_fun", (DL_FUNC) &_esreg_G2_fun, 2},
+    {"_esreg_G2_prime_fun", (DL_FUNC) &_esreg_G2_prime_fun, 2},
+    {"_esreg_G_vec", (DL_FUNC) &_esreg_G_vec, 3},
+    {"_esreg_esr_rho_lp", (DL_FUNC) &_esreg_esr_rho_lp, 7},
+    {"_esreg_esr_psi_lp", (DL_FUNC) &_esreg_esr_psi_lp, 7},
     {NULL, NULL, 0}
 };
 
