@@ -1,3 +1,6 @@
+# 0.2.1
+Add the residuals methods
+
 # 0.2.0
 Add the semi-parametric estimator of the truncated conditional variance
 

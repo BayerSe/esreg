@@ -341,3 +341,9 @@ print.summary.esreg <- function(x, ...) {
   cat("\nExpected Shortfall Coefficients:\n")
   stats::printCoefmat(x$coef_mat[(k+1):(2*k),])
 }
+
+#' @export
+residuals.esreg <- function(object, ...) {
+  cbind(object$y - object$x %*% object$coefficients_q,
+        object$y - object$x %*% object$coefficients_e)
+}
