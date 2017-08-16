@@ -2,7 +2,7 @@
 #' @description  Estimates a joint linear regression model for the pair (VaR, ES):
 #' \deqn{Q_\alpha(Y | X) = X'\beta_q}
 #' \deqn{ES_\alpha(Y | X) = X'\beta_e}
-#' @param formula Forumula object, e.g.: y ~ x1 + x2 + ...
+#' @param formula Formula object, e.g.: y ~ x1 + x2 + ...
 #' @param data data.frame that holds the variables.
 #' If missing the data is extracted from the environment.
 #' @param alpha Quantile of interest

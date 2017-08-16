@@ -7,7 +7,7 @@
 esreg_twostep(formula, data, alpha)
 }
 \arguments{
-\item{formula}{Forumula object, e.g.: y ~ x1 + x2 + ...}
+\item{formula}{Formula object, e.g.: y ~ x1 + x2 + ...}
 
 \item{data}{data.frame that holds the variables. Can be missing.}
 

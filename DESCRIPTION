@@ -1,6 +1,6 @@
 Package: esreg
 Type: Package
-Title: Joint (VaR, ES) Regression
+Title: Joint Quantile and Expected Shortfall Regression
 Version: 0.2.1
 Date: 2017-08-16
 Authors@R: c(person('Sebastian', 'Bayer', email='sebatian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 

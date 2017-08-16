@@ -237,7 +237,7 @@ double esr_rho_lp(const arma::colvec& b, const arma::colvec& y, const arma::mat&
 }
 
 
-//' @title Indentification function for the pair (VaR, ES) for a linear predictor
+//' @title Identification function for the pair (VaR, ES) for a linear predictor
 //' @description Returns psi' * psi.
 //' @param b Parameter vector
 //' @param y Vector of dependent data

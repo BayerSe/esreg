@@ -29,7 +29,7 @@ esr_loss <- function(r, q, e, alpha, g1 = 2L, g2 = 1L, return_mean = TRUE) {
 #' @description Equivalent to the tick / check loss when g is the identity function.
 #' @param r Vector of returns
 #' @param q Vector of quantiles
-#' @param alpha Quantile of interst
+#' @param alpha Quantile of interest
 #' @param g A nondecreasing function
 #' @param return_mean If TRUE returns the average tick loss, else the individual values
 #' @references Gneiting (2011)

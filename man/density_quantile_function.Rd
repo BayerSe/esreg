@@ -2,7 +2,7 @@
 % Please edit documentation in R/nuisance_quantities.R
 \name{density_quantile_function}
 \alias{density_quantile_function}
-\title{Denstiy Quantile Function}
+\title{Density Quantile Function}
 \usage{
 density_quantile_function(y, x, u, alpha, sparsity, bandwidth_type)
 }

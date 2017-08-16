@@ -2,7 +2,7 @@
 % Please edit documentation in R/RcppExports.R
 \name{esr_psi_lp}
 \alias{esr_psi_lp}
-\title{Indentification function for the pair (VaR, ES) for a linear predictor}
+\title{Identification function for the pair (VaR, ES) for a linear predictor}
 \usage{
 esr_psi_lp(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0)
 }

@@ -9,7 +9,7 @@ esreg(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho",
   max.time = 10, box = 10))
 }
 \arguments{
-\item{formula}{Forumula object, e.g.: y ~ x1 + x2 + ...}
+\item{formula}{Formula object, e.g.: y ~ x1 + x2 + ...}
 
 \item{data}{data.frame that holds the variables.
 If missing the data is extracted from the environment.}

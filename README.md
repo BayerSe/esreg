@@ -1,3 +1,5 @@
+[![Travis-CI Build Status](https://travis-ci.org/BayerSe/esreg.svg?branch=master)](https://travis-ci.org/BayerSe/esreg)
+
 esreg
 =====
 
@@ -10,7 +12,7 @@ Installation
 ### CRAN (stable release)
 
 You can install the released version from
-[CRAN](http://cran.r-project.org/):
+[CRAN](https://cran.r-project.org/):
 
 `install.packages("esreg")`
 

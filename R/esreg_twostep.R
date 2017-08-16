@@ -2,7 +2,7 @@
 #' @description Estimates the expected shortfall in two steps. First a linear quantile regression,
 #' then a weighted least squares regression. This estimator is much faster than the joint.
 #' The estimates are, however, often less precise. For more information, see \code{\link{esreg}}.
-#' @param formula Forumula object, e.g.: y ~ x1 + x2 + ...
+#' @param formula Formula object, e.g.: y ~ x1 + x2 + ...
 #' @param data data.frame that holds the variables. Can be missing.
 #' @param alpha Quantile of interest
 #' @param ... additional arguments

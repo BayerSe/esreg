@@ -20,7 +20,7 @@
 \item{cond_var}{Conditional truncated variance estimator
 \itemize{
   \item [ind] Variance over all negative residuals
-  \item scl_N Scaling with the Normal distribution
+  \item scl_N Scaling with the normal distribution
   \item scl_sp Scaling with the kernel density function
 }}
 

@@ -114,7 +114,7 @@ esr_rho_lp <- function(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0) {
     .Call('_esreg_esr_rho_lp', PACKAGE = 'esreg', b, y, x, alpha, g1, g2, delta)
 }
 
-#' @title Indentification function for the pair (VaR, ES) for a linear predictor
+#' @title Identification function for the pair (VaR, ES) for a linear predictor
 #' @description Returns psi' * psi.
 #' @param b Parameter vector
 #' @param y Vector of dependent data

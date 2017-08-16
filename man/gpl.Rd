@@ -11,7 +11,7 @@ gpl(r, q, alpha, g = function(x) x, return_mean = TRUE)
 
 \item{q}{Vector of quantiles}
 
-\item{alpha}{Quantile of interst}
+\item{alpha}{Quantile of interest}
 
 \item{g}{A nondecreasing function}
 

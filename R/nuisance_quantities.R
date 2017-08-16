@@ -1,4 +1,4 @@
-#' @title Denstiy Quantile Function
+#' @title Density Quantile Function
 #' @description Estimate the density quantile function
 #' @param y Vector of dependent data
 #' @param x Matrix of covariates
