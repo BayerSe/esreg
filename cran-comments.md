@@ -1,6 +1,5 @@
 ## Changes since last submission
-* Update Description field in DESCRIPTION file
-* Include more examples
+* Update reference in Description field of DESCRIPTION file 
 
 ## Test environments
 * Arch and Ubuntu 16.04, R 3.4.1
