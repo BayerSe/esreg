@@ -3,7 +3,7 @@ Type: Package
 Title: Joint Quantile and Expected Shortfall Regression
 Version: 0.2.1
 Date: 2017-08-16
-Authors@R: c(person('Sebastian', 'Bayer', email='sebatian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
+Authors@R: c(person('Sebastian', 'Bayer', email='sebastian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
              person('Timo', 'Dimitriadis', role='aut'))
 Description: Simultaneous modeling of the quantile and the Expected Shortfall of a response variable given a set of covariates.
 License: GPL-3
