@@ -13,7 +13,7 @@ esr_loss(r, q, e, alpha, g1 = 2L, g2 = 1L, return_mean = TRUE)
 
 \item{e}{Vector of expected shortfalls}
 
-\item{alpha}{Quantile of interest}
+\item{alpha}{Probability level}
 
 \item{g1}{1, 2, see \link{G1_fun}}
 

@@ -3,7 +3,7 @@
 #' @param y Vector of dependent data
 #' @param x Matrix of covariates
 #' @param u Quantile residuals
-#' @param alpha Quantile of interest
+#' @param alpha Probability level
 #' @param sparsity iid or ind
 #' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
 #' @references Bofinger (1975), Chamberlain (1994), Hall and Sheather(1988)

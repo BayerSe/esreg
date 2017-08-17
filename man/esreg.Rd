@@ -14,7 +14,7 @@ esreg(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho",
 \item{data}{data.frame that holds the variables.
 If missing the data is extracted from the environment.}
 
-\item{alpha}{Quantile of interest}
+\item{alpha}{Probability level}
 
 \item{g1}{1, [2] (see \link{G1_fun}, \link{G1_prime_fun})}
 
@@ -45,14 +45,46 @@ Estimates a joint linear regression model for the pair (VaR, ES):
 \deqn{ES_\alpha(Y | X) = X'\beta_e}
 }
 \examples{
-# Simulate data
-set.seed(1)
-x <- rchisq(1000, df = 1)
+# Simulate data (DGP-(2) in the linked paper)
+set.seed(0)
+x <- rchisq(2000, df=1)
 y <- -x + (1 + 0.5 * x) * rnorm(1000)
 
-# Estimate the model and the covariance
-fit <- esreg(y ~ x, alpha = 0.025)
-summary(object = fit, sparsity = "nid", cond_var = "scl_sp")
+# True quantile and expected shortfall regression parameters (for alpha=0.025)
+alpha=0.025
+true_pars <- c(-1.959964, -1.979982, -2.337803, -2.168901)
+
+# Estimate the model using the standard settings
+fit <- esreg(y ~ x, alpha=alpha)
+
+# Compare the different variance-covariance estimators
+cov1 <- vcov(object=fit, sparsity="iid", cond_var="ind")
+cov2 <- vcov(object=fit, sparsity="nid", cond_var="scl_N")
+cov3 <- vcov(object=fit, sparsity="nid", cond_var="scl_sp")
+
+print("Comparison of the variance-covariance estimators")
+print(rbind(Truth=true_pars,
+            Estimate=coef(fit),
+            SE_iid_ind=sqrt(diag(cov1)),
+            SE_ind_N=sqrt(diag(cov2)),
+            SE_ind_sp=sqrt(diag(cov3))))
+
+# Compares estimates using different G2 functions
+fit1 <- esreg(y ~ x, alpha=alpha, g2=1)
+fit2 <- esreg(y ~ x, alpha=alpha, g2=2)
+fit3 <- esreg(y ~ x, alpha=alpha, g2=3)
+fit4 <- esreg(y ~ x, alpha=alpha, g2=4)
+fit5 <- esreg(y ~ x, alpha=alpha, g2=4)
+fits <- sapply(list(fit1, fit2, fit3, fit4, fit5), coef)
+colnames(fits) <- sapply(1:5, function(i) esreg:::.G_function_names(1, i)[2])
+print("Comparison of the five G2 functions")
+print(rbind(Truth=true_pars, t(fits)))
+
+# Compare the M- and Z-estimator
+fit_m <- esreg(y ~ x, alpha=alpha, target="rho")
+fit_z <- esreg(y ~ x, alpha=alpha, target="psi")
+print("Comparison of the M- and Z-estimator")
+print(t(cbind(Truth=true_pars, M=coef(fit_m), Z=coef(fit_z))))
 }
 \references{
 \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}

@@ -1,13 +1,36 @@
 #' @title Two Step (VaR, ES) Regression
 #' @description Estimates the expected shortfall in two steps. First a linear quantile regression,
-#' then a weighted least squares regression. This estimator is much faster than the joint.
-#' The estimates are, however, often less precise. For more information, see \code{\link{esreg}}.
+#' then a weighted least squares regression (see the Oracle estimator in the references for a brief explanation).
+#' This estimator is much faster than the joint estimator \code{\link{esreg}}.
+#' However, the estimates are often less precise and it is recommended primarily if one needs
+#' estimates quickly.
 #' @param formula Formula object, e.g.: y ~ x1 + x2 + ...
 #' @param data data.frame that holds the variables. Can be missing.
-#' @param alpha Quantile of interest
-#' @param ... additional arguments
+#' @param alpha Probability level
+#' @examples
+#' # Simulate data (DGP-(2) in the linked paper)
+#' set.seed(0)
+#' x <- rchisq(2000, df=1)
+#' y <- -x + (1 + 0.5 * x) * rnorm(1000)
+#'
+#' # True quantile and expected shortfall regression parameters (for alpha=0.025)
+#' alpha=0.025
+#' true_pars <- c(-1.959964, -1.979982, -2.337803, -2.168901)
+#'
+#' # Joint estimator
+#' fit_joint <- esreg(y ~ x, alpha=alpha)
+#'
+#' # Two-step estimator
+#' fit_twostep <- esreg_twostep(y ~ x, alpha=alpha)
+#'
+#' # Compare the estimates
+#' print(rbind(Truth=true_pars, Joint=coef(fit_joint), `Two-Step`=coef(fit_twostep)))
+#'
+#' # ... and the estimation times
+#' print(c(Joint=fit_joint$time, `Two Step`=fit_twostep$time))
 #' @seealso \code{\link{vcov.esreg_twostep}} for the covariance estimation and
 #' \code{\link{summary.esreg_twostep}} for a summary of the regression results
+#' @references \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
 #' @export
 esreg_twostep <- function(formula, data, alpha) {
 

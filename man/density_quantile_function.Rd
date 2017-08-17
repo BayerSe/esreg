@@ -13,7 +13,7 @@ density_quantile_function(y, x, u, alpha, sparsity, bandwidth_type)
 
 \item{u}{Quantile residuals}
 
-\item{alpha}{Quantile of interest}
+\item{alpha}{Probability level}
 
 \item{sparsity}{iid or ind}
 
