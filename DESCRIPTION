@@ -6,8 +6,8 @@ Date: 2017-08-17
 Authors@R: c(person('Sebastian', 'Bayer', email='sebastian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
              person('Timo', 'Dimitriadis', role='aut'))
 Description: 
-    Simultaneous modeling of the quantile and the expected shortfall of a 
-    response variable given a set of covariates. Reference: arXiv:1704.02213.
+    Simultaneous modeling of the quantile and the expected shortfall of a response variable given 
+    a set of covariates, see Dimitriadis and Bayer (2017) <arXiv:1704.02213>.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
