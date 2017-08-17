@@ -1,3 +1,6 @@
+# 0.3.0
+Bump version for CRAN release
+
 # 0.2.2
 Clean imports in description
 
