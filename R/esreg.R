@@ -53,7 +53,7 @@
 #' fit2 <- esreg(y ~ x, alpha=alpha, g2=2)
 #' fit3 <- esreg(y ~ x, alpha=alpha, g2=3)
 #' fit4 <- esreg(y ~ x, alpha=alpha, g2=4)
-#' fit5 <- esreg(y ~ x, alpha=alpha, g2=4)
+#' fit5 <- esreg(y ~ x, alpha=alpha, g2=5)
 #' fits <- sapply(list(fit1, fit2, fit3, fit4, fit5), coef)
 #' colnames(fits) <- sapply(1:5, function(i) esreg:::.G_function_names(1, i)[2])
 #' print("Comparison of the five G2 functions")
