@@ -1,3 +1,6 @@
+# 0.2.2
+Clean imports in description
+
 # 0.2.1
 Add the residuals methods
 

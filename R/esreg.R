@@ -128,8 +128,8 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_
       }
     }
   } else if (tolower(method) == "sa") {  ## Simmulated annealing
-    if (!("GenSA" %in% rownames(utils::installed.packages()))) {
-      stop("GenSA needed for this function to work. Please install it.")
+    if (!requireNamespace("GenSA", quietly = TRUE)) {
+      stop("GenSA needed for this function to work. Please install it.", call. = FALSE)
     }
     fit <- GenSA::GenSA(par = b0, fn = fun,
                         lower = b0 - rep(control$box, 2 * k),

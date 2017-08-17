@@ -1,15 +1,21 @@
 Package: esreg
 Type: Package
 Title: Joint Quantile and Expected Shortfall Regression
-Version: 0.2.1
-Date: 2017-08-16
+Version: 0.2.2
+Date: 2017-08-17
 Authors@R: c(person('Sebastian', 'Bayer', email='sebastian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
              person('Timo', 'Dimitriadis', role='aut'))
 Description: Simultaneous modeling of the quantile and the Expected Shortfall of a response variable given a set of covariates.
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: stats, utils, Rcpp, quantreg, SparseM, MatrixModels, methods
-Suggests: GenSA
-LinkingTo: Rcpp, RcppArmadillo
+Imports: 
+    quantreg,
+    Rcpp,
+    stats
+Suggests: 
+    GenSA
+LinkingTo: 
+    Rcpp, 
+    RcppArmadillo
 RoxygenNote: 6.0.1
