@@ -1,3 +1,7 @@
+## Changes since last submission
+* Update Description field in DESCRIPTION file
+* Include more examples
+
 ## Test environments
 * Arch and Ubuntu 16.04, R 3.4.1
 * win-builder (devel and release)
