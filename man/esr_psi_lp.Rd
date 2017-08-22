@@ -13,14 +13,14 @@ esr_psi_lp(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0)
 
 \item{x}{Matrix of covariates. Note: intercept needs to be added manually}
 
-\item{alpha}{Quantile of interest}
+\item{alpha}{Probability level}
 
 \item{g1}{1, 2 (see \link{G1_prime_fun})}
 
 \item{g2}{1, 2, 3, 4, 5 (see \link{G2_fun}, \link{G2_prime_fun})}
 
-\item{delta}{Approximation of the indicator function (0 is the indicator function)}
+\item{delta}{Smooth approximation of the indicator function (0 is the indicator function)}
 }
 \description{
-Returns psi' * psi.
+Returns psi' * psi for the parametet vector b
 }

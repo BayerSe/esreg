@@ -88,25 +88,26 @@ G2_prime_fun <- function(z, type) {
     .Call('_esreg_G2_prime_fun', PACKAGE = 'esreg', z, type)
 }
 
-#' @title Vectorized call to the G1/G2 functions
-#' @description Vectorized call to the G1/G2 functions
+#' @title Vectorized call to the G1 / G2 functions
+#' @description Vectorized call to the G1 / G2 functions
 #' @param z Vector
-#' @param g G1, G1_prime, G2_curly, G2 or G2_curly
-#' @param type G1: 1-2; G2: 1-5
+#' @param g String, either G1, G1_prime, G2_curly, G2 or G2_curly
+#' @param type Numeric, for G1: 1-2; G2: 1-5
+#' (see \link{G1_fun}, \link{G1_prime_fun}, \link{G2_curly_fun}, \link{G2_fun}, \link{G2_prime_fun})
 #' @export
 G_vec <- function(z, g, type) {
     .Call('_esreg_G_vec', PACKAGE = 'esreg', z, g, type)
 }
 
 #' @title Joint (VaR, ES) loss for a linear predictor
-#' @description Returns the loss at b
+#' @description Returns the loss for the parametet vector b
 #' @param b Parameter vector
 #' @param y Vector of dependent data
 #' @param x Matrix of covariates. Note: intercept needs to be added manually
-#' @param alpha Quantile of interest
+#' @param alpha Probability level
 #' @param g1 1, 2 (see \link{G1_fun})
 #' @param g2 1, 2, 3, 4, 5 (see \link{G2_curly_fun}, \link{G2_fun})
-#' @param delta Approximation of the indicator function (0 is the indicator function)
+#' @param delta Smooth approximation of the indicator function (0 is the indicator function)
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib esreg
 #' @export
@@ -115,14 +116,14 @@ esr_rho_lp <- function(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0) {
 }
 
 #' @title Identification function for the pair (VaR, ES) for a linear predictor
-#' @description Returns psi' * psi.
+#' @description Returns psi' * psi for the parametet vector b
 #' @param b Parameter vector
 #' @param y Vector of dependent data
 #' @param x Matrix of covariates. Note: intercept needs to be added manually
-#' @param alpha Quantile of interest
+#' @param alpha Probability level
 #' @param g1 1, 2 (see \link{G1_prime_fun})
 #' @param g2 1, 2, 3, 4, 5 (see \link{G2_fun}, \link{G2_prime_fun})
-#' @param delta Approximation of the indicator function (0 is the indicator function)
+#' @param delta Smooth approximation of the indicator function (0 is the indicator function)
 #' @importFrom Rcpp sourceCpp
 #' @useDynLib esreg
 #' @export
