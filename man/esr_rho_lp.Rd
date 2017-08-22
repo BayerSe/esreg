@@ -22,5 +22,6 @@ esr_rho_lp(b, y, x, alpha, g1 = 2L, g2 = 1L, delta = 0)
 \item{delta}{Smooth approximation of the indicator function (0 is the indicator function)}
 }
 \description{
-Returns the loss for the parametet vector b
+Returns the loss for the parameter vector b
 }
+\keyword{internal}

@@ -17,3 +17,4 @@ G_vec(z, g, type)
 \description{
 Vectorized call to the G1 / G2 functions
 }
+\keyword{internal}
