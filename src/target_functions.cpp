@@ -284,7 +284,7 @@ double esr_psi_lp(const arma::colvec& b, const arma::colvec& y, const arma::mat&
     psi.subvec(k, 2*k-1) += xi * G2_prime_fun(xe, g2) * (xe - xq + (xq - yi) * h / alpha);
   }
   // Compute the inner product
-  double out = as_scalar(psi.t() * psi) / pow(n, 2);
+  double out = as_scalar(psi.t() * psi) / (n*n);
 
   return out;
 }
