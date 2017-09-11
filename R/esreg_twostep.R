@@ -92,8 +92,8 @@ vcov.esreg_twostep <- function(object, sparsity = "iid", cond_var = "ind", bandw
   if(is.null(bootstrap_method)) {
     if(!(sparsity %in% c("iid", "nid")))
       stop("sparsity can be iid or nid")
-    if(!(cond_var %in% c('ind', 'scl_N', 'scl_t')))
-      stop('cond_var can be ind, scl_N or scl_t')
+    if(!(cond_var %in% c('ind', 'scl_N', 'scl_sp')))
+      stop('cond_var can be ind, scl_N or scl_sp')
     if(!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
       stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
 
