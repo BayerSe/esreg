@@ -46,8 +46,8 @@
 #' print(rbind(Truth=true_pars,
 #'             Estimate=coef(fit),
 #'             SE_iid_ind=sqrt(diag(cov1)),
-#'             SE_ind_N=sqrt(diag(cov2)),
-#'             SE_ind_sp=sqrt(diag(cov3))))
+#'             SE_nid_N=sqrt(diag(cov2)),
+#'             SE_nid_sp=sqrt(diag(cov3))))
 #'
 #' # Compares estimates using different G2 functions
 #' fit1 <- esreg(y ~ x, alpha=alpha, g2=1)
