@@ -83,12 +83,16 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_
     stop("method can be ils or sa.")
 
   # Extract the formula
-  if (missing(data)) {}
-    data <- environment(formula)
-  call <- match.call()
-  mf <- stats::model.frame(formula = formula, data = data)
-  x <- stats::model.matrix(attr(mf, "terms"), data = mf)
-  y <- stats::model.response(mf)
+  cl <- match.call()
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset", "weights", "na.action", "offset"), names(mf), 0L)
+  mf <- mf[c(1L, m)]
+  mf$drop.unused.levels <- TRUE
+  mf[[1L]] <- quote(stats::model.frame)
+  mf <- eval(mf, parent.frame())
+  y <- stats::model.response(mf, "numeric")
+  mt <- attr(mf, "terms")
+  x <- stats::model.matrix(mt, mf, stats::contrasts)
   k <- ncol(x)
 
   # Check the input data
@@ -191,7 +195,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_
                               e = x %*% b[(k + 1):(2 * k)])
 
   # Return results
-  structure(list(call = call, formula = formula,
+  structure(list(call = cl, terms = mt, model = mf,
                  target = target, method = method, g1 = g1, g2 = g2, shift_data = shift_data,
                  alpha = alpha, y = y, x = x, b0 = b0,
                  coefficients = b,

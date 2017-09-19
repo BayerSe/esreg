@@ -38,12 +38,17 @@ esreg_twostep <- function(formula, data, alpha) {
   t0 <- Sys.time()
 
   # Extract the formula
-  if (missing(data))
-    data <- environment(formula)
-  call <- match.call()
-  mf <- stats::model.frame(formula = formula, data = data)
-  x <- stats::model.matrix(attr(mf, "terms"), data = mf)
-  y <- stats::model.response(mf)
+  cl <- match.call()
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("formula", "data", "subset", "weights", "na.action", "offset"), names(mf), 0L)
+  mf <- mf[c(1L, m)]
+  mf$drop.unused.levels <- TRUE
+  mf[[1L]] <- quote(stats::model.frame)
+  mf <- eval(mf, parent.frame())
+  y <- stats::model.response(mf, "numeric")
+  mt <- attr(mf, "terms")
+  x <- stats::model.matrix(mt, mf, stats::contrasts)
+  k <- ncol(x)
 
   # Check the data
   if (any(is.na(y)) | any(is.na(x)))
@@ -65,7 +70,7 @@ esreg_twostep <- function(formula, data, alpha) {
   names(b_e) <- paste0("be_", 1:length(b_e) - 1)
 
   # Return results
-  structure(list(call = call, formula = formula,
+  structure(list(call = cl, terms = mt, model = mf,
                  alpha = alpha, y = y, x = x,
                  coefficients = c(b_q, b_e),
                  coefficients_q = b_q,
