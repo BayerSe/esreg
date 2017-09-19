@@ -1,3 +1,6 @@
+# 0.3.2
+Improved speed of the semi-parametric covariance estimator
+
 # 0.3.1
 Fixed an overloaded ‘pow(int&, int)’ bug (Solaris), improved the help files and marked several functions as internal.
 

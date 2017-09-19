@@ -1,8 +1,8 @@
 Package: esreg
 Type: Package
 Title: Joint Quantile and Expected Shortfall Regression
-Version: 0.3.1
-Date: 2017-08-22
+Version: 0.3.2
+Date: 2017-09-19
 Authors@R: c(person('Sebastian', 'Bayer', email='sebastian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
              person('Timo', 'Dimitriadis', role='aut'))
 Description: 
