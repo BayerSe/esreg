@@ -1,6 +1,3 @@
-[![Travis-CI Build
-Status](https://travis-ci.org/BayerSe/esreg.svg?branch=master)](https://travis-ci.org/BayerSe/esreg)
-
 esreg
 =====
 
@@ -24,7 +21,7 @@ The latest version of the package is under development at
 development version using these commands:
 
     install.packages("devtools")
-    devtools::install_github("BayerSe/esreg"")
+    devtools::install_github("BayerSe/esreg")
 
 If you are using Windows, you need to install the
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) for compilation
