@@ -69,12 +69,16 @@ esreg_twostep <- function(formula, data, alpha) {
   names(b_q) <- paste0("bq_", 1:length(b_q) - 1)
   names(b_e) <- paste0("be_", 1:length(b_e) - 1)
 
+  # Compute the fitted values
+  fitted.values <- data.frame(q = x %*% b_q,
+                              e = x %*% b_e)
   # Return results
   structure(list(call = cl, terms = mt, model = mf,
                  alpha = alpha, y = y, x = x,
                  coefficients = c(b_q, b_e),
                  coefficients_q = b_q,
                  coefficients_e = b_e,
+                 fitted.values = fitted.values,
                  time = Sys.time() - t0),
             class = "esreg_twostep")
 }
