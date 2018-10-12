@@ -130,7 +130,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho",
 
   # Counts the iterations without decrease of the loss
   counter <- 0
-  while (counter < control$terminate_after) {
+  while (counter < early_stopping) {
     # Perturbe b
     bt <- fit$par + stats::rnorm(2*k, sd=se)
 
@@ -176,7 +176,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho",
 
   # Return results
   structure(list(call = cl, terms = mt, model = mf,
-                 target = target, method = method, g1 = g1, g2 = g2, shift_data = shift_data,
+                 target = target, g1 = g1, g2 = g2, shift_data = shift_data,
                  alpha = alpha, y = y, x = x, b0 = b0,
                  coefficients = b,
                  coefficients_q = b[1:k],
@@ -312,7 +312,7 @@ vcov.esreg <- function(object, sparsity = "iid", cond_var = "ind", bandwidth_typ
     b <- apply(idx, 2, function(id) {
       fitb <- esreg(fit$y[id] ~ fit$x[id, -1],
                     alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2,
-                    method = "ils", control=list(terminate_after = 0))
+                    method = "ils", early_stopping = 0)
       fitb$coefficients
     })
 
