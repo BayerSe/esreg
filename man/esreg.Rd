@@ -5,8 +5,8 @@
 \title{Joint Quantile and Expected Shortfall Regression}
 \usage{
 esreg(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho",
-  shift_data = TRUE, method = "ils", control = list(terminate_after = 10,
-  max.time = 10, box = 10))
+  shift_data = TRUE, method = "ils", control = list(terminate_after =
+  10, max.time = 10, box = 10))
 }
 \arguments{
 \item{formula}{Formula object, e.g.: y ~ x1 + x2 + ...}

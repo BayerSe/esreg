@@ -5,8 +5,8 @@
 \title{Covariance Estimation for esreg}
 \usage{
 \method{vcov}{esreg}(object, sparsity = "iid", cond_var = "ind",
-  bandwidth_type = "Hall-Sheather", bootstrap_method = NULL, B = 1000,
-  block_length = NULL, ...)
+  bandwidth_type = "Hall-Sheather", bootstrap_method = NULL,
+  B = 1000, block_length = NULL, ...)
 }
 \arguments{
 \item{object}{An esreg object}
