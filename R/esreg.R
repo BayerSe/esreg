@@ -13,14 +13,7 @@
 #' @param shift_data If g2 is 1, 2 or 3, we can either estimate the model without or with
 #' shifting of the Y variable. We either risk biased estimates (no shifting) or slightly different estimates due
 #' to the changed loss function (shifting). Defaults to shifting to avoid biased estimates.
-#' @param method Iterated local search (ils) or Simulated annealing (sa).
-#' Defaults to ils for reasons of computation speed.
-#' @param control A list with control parameters passed to either the ils or sa:
-#' \itemize{
-#'   \item terminate_after - Stop the iterated local search if there is no improvement within max_step consecutive steps. Default is 10.
-#'   \item max.time - Maximum running time of the sa optimizer.
-#'   \item box - Box around the parameters for the sa optimizer.
-#' }
+#' @param early_stopping Stop the iterated local search if there is no improvement in early_stopping steps.
 #' @return An esreg object
 #' @seealso \code{\link{vcov.esreg}} for the covariance estimation and
 #' \code{\link{summary.esreg}} for a summary of the regression results
@@ -67,8 +60,8 @@
 #' print(t(cbind(Truth=true_pars, M=coef(fit_m), Z=coef(fit_z))))
 #' @references \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
 #' @export
-esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_data = TRUE,
-                  method = "ils", control = list(terminate_after = 10, max.time = 10, box = 10)) {
+esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho",
+                  shift_data = TRUE, early_stopping = 10, ...) {
 
   # Start the timer
   t0 <- Sys.time()
@@ -77,10 +70,7 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_
   if (!(g1 %in% c(1, 2))) stop("G1 can be 1 or 2.")
   if (!(g2 %in% c(1, 2, 3, 4, 5))) stop("G2 can be 1, 2, 3, 4 or 5.")
   if ((alpha < 0) | (1 < alpha)) stop("alpha not in (0, 1)")
-  if (!(target %in% c("rho", "psi")))
-    stop("target can be rho or psi.")
-  if (!(method %in% c("ils", "sa")))
-    stop("method can be ils or sa.")
+  if (!(target %in% c("rho", "psi"))) stop("target can be rho or psi.")
 
   # Extract the formula
   cl <- match.call()
@@ -134,44 +124,34 @@ esreg <- function(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho", shift_
   # Store the coefficient estimates
   b0 <- as.vector(fit_qr$coef)
 
-  # Optimize the model
-  if (tolower(method) == "ils") { ## Iterated local search
-    # Initial optimization
-    fit <- try(stats::optim(par = b0, fn = fun, method = "Nelder-Mead"), silent = TRUE)
+  ## Optimize the model using iterated local search
+  # Initial optimization
+  fit <- try(stats::optim(par = b0, fn = fun, method = "Nelder-Mead"), silent = TRUE)
 
-    # Counts the iterations without decrease of the loss
-    counter <- 0
-    while (counter < control$terminate_after) {
-      # Perturbe b
-      bt <- fit$par + stats::rnorm(2*k, sd=se)
+  # Counts the iterations without decrease of the loss
+  counter <- 0
+  while (counter < control$terminate_after) {
+    # Perturbe b
+    bt <- fit$par + stats::rnorm(2*k, sd=se)
 
-      # If G2 is 1, 2, 3 and we do not shift the data, ensure that x'be < 0 by moving the es intercept
-      if ((!shift_data) & (g2 %in% c(1, 2, 3))) {
-        max_xe <- max(x %*% bt[(k+1):(2*k)])
-        bt[k+1] <- bt[k+1] - (max_xe + 0.1) * (max_xe > 0)
-      }
+    # If G2 is 1, 2, 3 and we do not shift the data, ensure that x'be < 0 by moving the es intercept
+    if ((!shift_data) & (g2 %in% c(1, 2, 3))) {
+      max_xe <- max(x %*% bt[(k+1):(2*k)])
+      bt[k+1] <- bt[k+1] - (max_xe + 0.1) * (max_xe > 0)
+    }
 
-      # Fit the model with the perturbed parameters
-      tmp_fit <- try(stats::optim(par = bt, fn = fun, method = "Nelder-Mead"), silent = TRUE)
+    # Fit the model with the perturbed parameters
+    tmp_fit <- try(stats::optim(par = bt, fn = fun, method = "Nelder-Mead"), silent = TRUE)
 
-      # Replace the fit if the new loss is smaller than the old. Otherwise increase the counter.
-      if (!inherits(tmp_fit, "try-error")) {
-        if (tmp_fit$value < fit$value) {
-          fit <- tmp_fit
-          counter <- 0
-        } else {
-          counter <- counter + 1
-        }
+    # Replace the fit if the new loss is smaller than the old. Otherwise increase the counter.
+    if (!inherits(tmp_fit, "try-error")) {
+      if (tmp_fit$value < fit$value) {
+        fit <- tmp_fit
+        counter <- 0
+      } else {
+        counter <- counter + 1
       }
     }
-  } else if (tolower(method) == "sa") {  ## Simmulated annealing
-    if (!requireNamespace("GenSA", quietly = TRUE)) {
-      stop("GenSA needed for this function to work. Please install it.", call. = FALSE)
-    }
-    fit <- GenSA::GenSA(par = b0, fn = fun,
-                        lower = b0 - rep(control$box, 2 * k),
-                        upper = b0 + rep(control$box, 2 * k),
-                        control = list(max.time = control$max.time))
   }
 
   # Set names of the parameters

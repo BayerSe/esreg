@@ -5,8 +5,7 @@
 \title{Joint Quantile and Expected Shortfall Regression}
 \usage{
 esreg(formula, data, alpha, g1 = 2L, g2 = 1L, target = "rho",
-  shift_data = TRUE, method = "ils", control = list(terminate_after =
-  10, max.time = 10, box = 10))
+  shift_data = TRUE, early_stopping = 10, ...)
 }
 \arguments{
 \item{formula}{Formula object, e.g.: y ~ x1 + x2 + ...}
@@ -27,15 +26,7 @@ Optimization of the loss function is strongly recommended.}
 shifting of the Y variable. We either risk biased estimates (no shifting) or slightly different estimates due
 to the changed loss function (shifting). Defaults to shifting to avoid biased estimates.}
 
-\item{method}{Iterated local search (ils) or Simulated annealing (sa).
-Defaults to ils for reasons of computation speed.}
-
-\item{control}{A list with control parameters passed to either the ils or sa:
-\itemize{
-  \item terminate_after - Stop the iterated local search if there is no improvement within max_step consecutive steps. Default is 10.
-  \item max.time - Maximum running time of the sa optimizer.
-  \item box - Box around the parameters for the sa optimizer.
-}}
+\item{early_stopping}{Stop the iterated local search if there is no improvement in early_stopping steps.}
 }
 \value{
 An esreg object

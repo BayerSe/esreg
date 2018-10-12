@@ -15,8 +15,6 @@ Imports:
     quantreg,
     Rcpp,
     stats
-Suggests: 
-    GenSA
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
