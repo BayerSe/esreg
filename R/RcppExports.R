@@ -6,16 +6,6 @@ l_esreg_covariance <- function(x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, densi
     .Call('_esreg_l_esreg_covariance', PACKAGE = 'esreg', x, xq, xe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
 }
 
-#' @keywords internal
-l_esreg_twostep_covariance <- function(x, xq, xe, density, conditional_variance, alpha) {
-    .Call('_esreg_l_esreg_twostep_covariance', PACKAGE = 'esreg', x, xq, xe, density, conditional_variance, alpha)
-}
-
-#' @keywords internal
-stationary_bootstrap_indices <- function(n, avg_block_size, B) {
-    .Call('_esreg_stationary_bootstrap_indices', PACKAGE = 'esreg', n, avg_block_size, B)
-}
-
 #' @title Specification Function
 #' @description G1
 #' @param z Data

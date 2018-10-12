@@ -25,35 +25,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// l_esreg_twostep_covariance
-arma::mat l_esreg_twostep_covariance(arma::mat x, arma::colvec xq, arma::colvec xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
-RcppExport SEXP _esreg_l_esreg_twostep_covariance(SEXP xSEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type xq(xqSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type xe(xeSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type density(densitySEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type conditional_variance(conditional_varianceSEXP);
-    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(l_esreg_twostep_covariance(x, xq, xe, density, conditional_variance, alpha));
-    return rcpp_result_gen;
-END_RCPP
-}
-// stationary_bootstrap_indices
-Rcpp::NumericMatrix stationary_bootstrap_indices(int n, double avg_block_size, int B);
-RcppExport SEXP _esreg_stationary_bootstrap_indices(SEXP nSEXP, SEXP avg_block_sizeSEXP, SEXP BSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< double >::type avg_block_size(avg_block_sizeSEXP);
-    Rcpp::traits::input_parameter< int >::type B(BSEXP);
-    rcpp_result_gen = Rcpp::wrap(stationary_bootstrap_indices(n, avg_block_size, B));
-    return rcpp_result_gen;
-END_RCPP
-}
 // G1_fun
 double G1_fun(double z, int type);
 RcppExport SEXP _esreg_G1_fun(SEXP zSEXP, SEXP typeSEXP) {
@@ -164,8 +135,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_esreg_l_esreg_covariance", (DL_FUNC) &_esreg_l_esreg_covariance, 9},
-    {"_esreg_l_esreg_twostep_covariance", (DL_FUNC) &_esreg_l_esreg_twostep_covariance, 6},
-    {"_esreg_stationary_bootstrap_indices", (DL_FUNC) &_esreg_stationary_bootstrap_indices, 3},
     {"_esreg_G1_fun", (DL_FUNC) &_esreg_G1_fun, 2},
     {"_esreg_G1_prime_fun", (DL_FUNC) &_esreg_G1_prime_fun, 2},
     {"_esreg_G2_curly_fun", (DL_FUNC) &_esreg_G2_curly_fun, 2},
