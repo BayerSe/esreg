@@ -14,7 +14,8 @@ LazyData: true
 Imports: 
     quantreg,
     Rcpp,
-    stats
+    stats,
+    Formula
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
