@@ -113,39 +113,42 @@ print.esreg <- function(x, digits = 4, ...) {
   print(format(x$coefficients_e, digits = digits), quote = FALSE)
 }
 
+#' @export
 summary.esreg <- function(object, ...) {
-  #   fit <- object
-  #   x <- fit$x
-  #   n <- nrow(x)
-  #   k <- ncol(x)
-  #   cov <- vcov.esreg(fit, ...)
-  #   se <- sqrt(diag(cov))
-  #   tval <- stats::coef(fit) / se
-  #   coef_mat <- cbind(
-  #     Estimate     = stats::coef(fit),
-  #     `Std. Error` = se,
-  #     `t value`    = tval,
-  #     `Pr(>|t|)`   = 2 * stats::pt(abs(tval), n - 2*k, lower.tail = FALSE)
-  #   )
-  #
-  #   structure(
-  #     c(fit, list(cov = cov, coef_mat = coef_mat)),
-  #     class = "summary.esreg")
+  xq <- object$xq
+  xe <- object$xe
+  n <- nrow(xq)
+  k <- ncol(xq) + ncol(xe)
+  cov <- vcov.esreg(object, ...)
+  se <- sqrt(diag(cov))
+  tval <- stats::coef(fit) / se
+  coef_mat <- cbind(
+    Estimate     = stats::coef(fit),
+    `Std. Error` = se,
+    `t value`    = tval,
+    `Pr(>|t|)`   = 2 * stats::pt(abs(tval), n - 2*k, lower.tail = FALSE)
+  )
+
+  structure(
+    c(fit, list(cov = cov, coef_mat = coef_mat)),
+    class = "summary.esreg")
 }
-#
-# print.summary.esreg <- function(x, ...) {
-#   k <- length(x$coefficients_q)
-#   cat("Call:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
-#   cat("\nalpha: ", sprintf("%.3f", x$alpha), "\n")
-#   cat(.G_function_names(x$g1, x$g2)[1], "\n")
-#   cat(.G_function_names(x$g1, x$g2)[2], "\n")
-#   cat("Value: ", sprintf("%.9f", x$value), "\n")
-#   cat("\nQuantile Coefficients:\n")
-#   stats::printCoefmat(x$coef_mat[1:k,], signif.legend = FALSE)
-#   cat("\nExpected Shortfall Coefficients:\n")
-#   stats::printCoefmat(x$coef_mat[(k+1):(2*k),])
-# }
-#
+
+#' @export
+print.summary.esreg <- function(x, ...) {
+  kq <- length(x$coefficients_q)
+  ke <- length(x$coefficients_e)
+  cat("Call:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
+  cat("\nalpha: ", sprintf("%.3f", x$alpha), "\n")
+  cat(.G_function_names(x$g1, x$g2)[1], "\n")
+  cat(.G_function_names(x$g1, x$g2)[2], "\n")
+  cat("Value: ", sprintf("%.9f", x$loss), "\n")
+  cat("\nQuantile Coefficients:\n")
+  stats::printCoefmat(x$coef_mat[1:kq,], signif.legend = FALSE)
+  cat("\nExpected Shortfall Coefficients:\n")
+  stats::printCoefmat(x$coef_mat[(kq+1):(kq+ke),])
+}
+
 
 #' @export
 fitted.esreg <- function(object, ...) {
