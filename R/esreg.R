@@ -2,7 +2,10 @@
 #' @description  Estimates a joint linear regression model for the pair (VaR, ES):
 #' \deqn{Q_\alpha(Y | Xq) = Xq'\beta_q}
 #' \deqn{ES_\alpha(Y | Xe) = Xe'\beta_e}
-#' @param formula Formula object
+#' @param formula Formula: y ~ x1 + x2 ... | x1 + x2 ...
+#' where the first part after the response variable specifies the quantile equation
+#' and the second the expected shortfall part. If only one set of regressors is
+#' provided it is used for both model specifications.
 #' @param data data.frame that holds the variables
 #' @param y Response vector
 #' @param xq Explanatory variables for the quantile regression equation
@@ -147,10 +150,6 @@ print.summary.esreg <- function(x, ...) {
   kq <- length(x$coefficients_q)
   ke <- length(x$coefficients_e)
   cat("Call:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
-  cat("\nalpha: ", sprintf("%.3f", x$alpha), "\n")
-  cat(.G_function_names(x$g1, x$g2)[1], "\n")
-  cat(.G_function_names(x$g1, x$g2)[2], "\n")
-  cat("Value: ", sprintf("%.9f", x$loss), "\n")
   cat("\nQuantile Coefficients:\n")
   stats::printCoefmat(x$coef_mat[1:kq,], signif.legend = FALSE)
   cat("\nExpected Shortfall Coefficients:\n")

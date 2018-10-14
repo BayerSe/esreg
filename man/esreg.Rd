@@ -17,7 +17,10 @@ esreg(...)
 \arguments{
 \item{...}{Further arguments (does not apply here)}
 
-\item{formula}{Formula object}
+\item{formula}{Formula: y ~ x1 + x2 ... | x1 + x2 ...
+where the first part after the response variable specifies the quantile equation
+and the second the expected shortfall part. If only one set of regressors is
+provided it is used for both model specifications.}
 
 \item{data}{data.frame that holds the variables}
 
