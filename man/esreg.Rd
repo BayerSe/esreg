@@ -79,6 +79,14 @@ colnames(fits) <- sapply(1:5, function(i) esreg:::.G_function_names(1, i)[2])
 print("Comparison of the five G2 functions")
 print(rbind(Truth=true_pars, t(fits)))
 
+# Usage of different covariates
+x <- rchisq(1000, df=1)
+noise <- rnorm(1000)
+y <- -x + (1 + 0.5 * x) * rnorm(1000)
+fit <- esreg(y ~ x | x + noise, alpha=0.025)
+print("Using different covariates for VaR and ES")
+print(summary(fit))
+
 }
 \references{
 \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}

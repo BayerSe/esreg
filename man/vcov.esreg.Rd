@@ -38,14 +38,11 @@ see \link{conditional_truncated_variance} for more details.
 \item{bootstrap_method}{The bootstrap sampling scheme to be used
 \itemize{
   \item iid - The iid bootstrap of Efron (1979)
-  \item stationary - The stationary bootstrap of Politis & Romano (1994)
 }}
 
 \item{B}{The number of bootstrap iterations}
 
 \item{...}{Further arguments (does not apply here)}
-
-\item{block_length}{Average block length for the stationary bootstrap}
 }
 \description{
 Estimate the variance-covariance matrix of the joint (VaR, ES) estimator either

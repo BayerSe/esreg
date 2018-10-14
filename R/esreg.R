@@ -50,6 +50,14 @@
 #' print("Comparison of the five G2 functions")
 #' print(rbind(Truth=true_pars, t(fits)))
 #'
+#' # Usage of different covariates
+#' x <- rchisq(1000, df=1)
+#' noise <- rnorm(1000)
+#' y <- -x + (1 + 0.5 * x) * rnorm(1000)
+#' fit <- esreg(y ~ x | x + noise, alpha=0.025)
+#' print("Using different covariates for VaR and ES")
+#' print(summary(fit))
+#'
 #' @references \href{https://arxiv.org/abs/1704.02213}{A Joint Quantile and Expected Shortfall Regression Framework}
 #' @rdname esreg
 #' @export
@@ -121,16 +129,16 @@ summary.esreg <- function(object, ...) {
   k <- ncol(xq) + ncol(xe)
   cov <- vcov.esreg(object, ...)
   se <- sqrt(diag(cov))
-  tval <- stats::coef(fit) / se
+  tval <- stats::coef(object) / se
   coef_mat <- cbind(
-    Estimate     = stats::coef(fit),
+    Estimate     = stats::coef(object),
     `Std. Error` = se,
     `t value`    = tval,
     `Pr(>|t|)`   = 2 * stats::pt(abs(tval), n - 2*k, lower.tail = FALSE)
   )
 
   structure(
-    c(fit, list(cov = cov, coef_mat = coef_mat)),
+    c(object, list(cov = cov, coef_mat = coef_mat)),
     class = "summary.esreg")
 }
 
@@ -196,10 +204,8 @@ predict.esreg <- function(object, newdata, ...) {
 #' @param bootstrap_method The bootstrap sampling scheme to be used
 #'   \itemize{
 #'     \item iid - The iid bootstrap of Efron (1979)
-#'     \item stationary - The stationary bootstrap of Politis & Romano (1994)
 #'   }
 #' @param B The number of bootstrap iterations
-#' @param block_length Average block length for the stationary bootstrap
 #' @param ... Further arguments (does not apply here)
 #' @export
 vcov.esreg <- function(object, type = 'asymptotic',
