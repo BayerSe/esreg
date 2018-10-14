@@ -4,14 +4,11 @@
 \alias{vcov.esreg}
 \title{Covariance Estimation for esreg}
 \usage{
-\method{vcov}{esreg}(object, type = "asymptotic", sparsity = "iid",
-  cond_var = "ind", bandwidth_type = "Hall-Sheather",
-  bootstrap_method = "iid", B = 1000, ...)
+\method{vcov}{esreg}(object, sparsity = "iid", cond_var = "ind",
+  bandwidth_type = "Hall-Sheather", ...)
 }
 \arguments{
 \item{object}{An esreg object}
-
-\item{type}{Either asymptotic or bootstrap.}
 
 \item{sparsity}{The sparsity estimator,
 see \link{density_quantile_function} for more details.
@@ -35,16 +32,9 @@ see \link{conditional_truncated_variance} for more details.
   \item Hall-Sheather
 }}
 
-\item{bootstrap_method}{The bootstrap sampling scheme to be used
-\itemize{
-  \item iid - The iid bootstrap of Efron (1979)
-}}
-
-\item{B}{The number of bootstrap iterations}
-
 \item{...}{Further arguments (does not apply here)}
 }
 \description{
-Estimate the variance-covariance matrix of the joint (VaR, ES) estimator either
-using the asymptotic formulas or using the bootstrap.
+Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+using the asymptotic formulas
 }

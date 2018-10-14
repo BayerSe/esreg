@@ -1,4 +1,4 @@
-#' @title Joint Quantile and Expected Shortfall Loss Function
+#' @title Joint Loss Function
 #' @description Computes the joint (VaR, ES) loss
 #' @param r Vector of returns
 #' @param q Vector of quantiles

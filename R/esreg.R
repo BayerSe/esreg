@@ -176,11 +176,10 @@ predict.esreg <- function(object, newdata, ...) {
   print('To be implemented')
 }
 
-#' @title Covariance Estimation for esreg
-#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator either
-#' using the asymptotic formulas or using the bootstrap.
+#' @title Covariance Estimation
+#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+#' using the asymptotic formulas
 #' @param object An esreg object
-#' @param type Either asymptotic or bootstrap.
 #' @param sparsity The sparsity estimator,
 #'   see \link{density_quantile_function} for more details.
 #'   \itemize{
@@ -200,6 +199,77 @@ predict.esreg <- function(object, newdata, ...) {
 #'    \item Chamberlain
 #'    \item Hall-Sheather
 #'  }
+#' @param ... Further arguments (does not apply here)
+#' @export
+vcov.esreg <- function(object, sparsity = 'iid', cond_var = 'ind',
+                       bandwidth_type = 'Hall-Sheather', ...) {
+  chkDots(...)
+  if(!(sparsity %in% c("iid", "nid")))
+    stop("sparsity can be iid or nid")
+  if(!(cond_var %in% c("ind", "scl_N", "scl_sp")))
+    stop("cond_var can be ind, scl_N or scl_sp")
+  if(!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
+    stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
+
+  # Extract some elements
+  y <- object$y
+  xq <- object$xq
+  xe <- object$xe
+  n <- nrow(xq)
+  kq <- ncol(xq)
+  ke <- ncol(xe)
+  coefficients_q <- object$coefficients_q
+  coefficients_e <- object$coefficients_e
+
+  # Transform the data and coefficients
+  if (object$g2 %in% c(1, 2, 3)) {
+    max_y <- max(y)
+    y <- y - max_y
+    coefficients_q[1] <- coefficients_q[1] - max_y
+    coefficients_e[1] <- coefficients_e[1] - max_y
+  }
+
+  # Precompute some quantities
+  xbq <- as.numeric(xq %*% coefficients_q)
+  xbe <- as.numeric(xe %*% coefficients_e)
+  uq <- as.numeric(y - xbq)
+
+  # Check the methods in case of sample quantile / es
+  if ((kq == 1) & (ke == 1) & sparsity != "iid") {
+    warning("Changed sparsity estimation to iid!")
+    sparsity <- "iid"
+  }
+  if ((kq == 1) & (ke == 1) & cond_var != "ind") {
+    warning("Changed conditional truncated variance estimation to nid!")
+    cond_var <- "ind"
+  }
+
+  # Density quantile function
+  dens <- density_quantile_function(y = y, x = xq, u = uq, alpha = object$alpha,
+                                    sparsity = sparsity, bandwidth_type = bandwidth_type)
+
+  # Truncated conditional variance
+  cv <- conditional_truncated_variance(y = uq, x = xq, approach = cond_var)
+
+  # Evaluate G1 / G2 functions
+  G1_prime_xq <- G_vec(z = xbq, g = "G1_prime", type = object$g1)
+  G2_xe <- G_vec(z = xbe, g = "G2", type = object$g2)
+  G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
+
+  # Compute the covariance matrix
+  cov <- l_esreg_covariance(
+    xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = object$alpha,
+    G1_prime_xq = G1_prime_xq,
+    G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
+    density = dens, conditional_variance = cv)
+  rownames(cov) <- colnames(cov) <- names(stats::coef(object))
+  cov
+}
+
+#' @title Bootstrap Covariance Estimation
+#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+#' using the bootstrap.
+#' @param object An esreg object
 #' @param bootstrap_method The bootstrap sampling scheme to be used
 #'   \itemize{
 #'     \item iid - The iid bootstrap of Efron (1979)
@@ -207,23 +277,26 @@ predict.esreg <- function(object, newdata, ...) {
 #' @param B The number of bootstrap iterations
 #' @param ... Further arguments (does not apply here)
 #' @export
-vcov.esreg <- function(object, type = 'asymptotic',
-                       sparsity = 'iid', cond_var = 'ind', bandwidth_type = 'Hall-Sheather',
-                       bootstrap_method='iid', B=1000, ...) {
-  chkDots(...)
-  if (type == 'asymptotic') {
-    cov <- cov_asymptotic(
-      fit = object,
-      sparsity = sparsity, cond_var = cond_var, bandwidth_type = bandwidth_type
-    )
-  } else if (type == 'bootstrap') {
-    cov <- cov_bootstrap(
-      fit = object,
-      bootstrap_method = bootstrap_method, B = B
-    )
-  } else {
-    stop('Non-supported covariance estimator')
-  }
+vcovB <-function(object, bootstrap_method='iid', B=1000) {
+  if (!(bootstrap_method %in% c(NULL, "iid", "stationary")))
+    stop("bootstrap_method can be NULL, iid or stationary")
+  if (B < 1000)
+    warning("The number of bootstrap iterations is small!")
+
+  # Draw the bootstrap indices
+  n <- length(object$y)
+  idx <- matrix(sample(1:n, size = n * B, replace = TRUE), nrow = n)
+
+  # Use the one_shot estimation approach for speed
+  b <- apply(idx, 2, function(id) {
+    fitb <- esreg(object$y[id] ~ object$xq[id, -1] | object$xe[id, -1],
+                  alpha = object$alpha, g1 = object$g1, g2 = object$g2,
+                  early_stopping = 0)
+    fitb$coefficients
+  })
+
+  # Compute the covariance
+  cov <- stats::cov(t(b))
   rownames(cov) <- colnames(cov) <- names(stats::coef(object))
   cov
 }
@@ -332,87 +405,4 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
   class(revtal) <- 'esreg'
 
   revtal
-}
-
-cov_asymptotic <- function(fit, sparsity, cond_var, bandwidth_type) {
-  if(!(sparsity %in% c("iid", "nid")))
-    stop("sparsity can be iid or nid")
-  if(!(cond_var %in% c("ind", "scl_N", "scl_sp")))
-    stop("cond_var can be ind, scl_N or scl_sp")
-  if(!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
-    stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
-
-  # Extract some elements
-  y <- fit$y
-  xq <- fit$xq
-  xe <- fit$xe
-  n <- nrow(xq)
-  kq <- ncol(xq)
-  ke <- ncol(xe)
-  coefficients_q <- fit$coefficients_q
-  coefficients_e <- fit$coefficients_e
-
-  # Transform the data and coefficients
-  if (fit$g2 %in% c(1, 2, 3)) {
-    max_y <- max(y)
-    y <- y - max_y
-    coefficients_q[1] <- coefficients_q[1] - max_y
-    coefficients_e[1] <- coefficients_e[1] - max_y
-  }
-
-  # Precompute some quantities
-  xbq <- as.numeric(xq %*% coefficients_q)
-  xbe <- as.numeric(xe %*% coefficients_e)
-  uq <- as.numeric(y - xbq)
-
-  # Check the methods in case of sample quantile / es
-  if ((kq == 1) & (ke == 1) & sparsity != "iid") {
-    warning("Changed sparsity estimation to iid!")
-    sparsity <- "iid"
-  }
-  if ((kq == 1) & (ke == 1) & cond_var != "ind") {
-    warning("Changed conditional truncated variance estimation to nid!")
-    cond_var <- "ind"
-  }
-
-  # Density quantile function
-  dens <- density_quantile_function(y = y, x = xq, u = uq, alpha = fit$alpha,
-                                    sparsity = sparsity, bandwidth_type = bandwidth_type)
-
-  # Truncated conditional variance
-  cv <- conditional_truncated_variance(y = uq, x = xq, approach = cond_var)
-
-  # Evaluate G1 / G2 functions
-  G1_prime_xq <- G_vec(z = xbq, g = "G1_prime", type = fit$g1)
-  G2_xe <- G_vec(z = xbe, g = "G2", type = fit$g2)
-  G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = fit$g2)
-
-  # Compute the covariance matrix
-  cov <- l_esreg_covariance(
-    xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = fit$alpha,
-    G1_prime_xq = G1_prime_xq,
-    G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
-    density = dens, conditional_variance = cv)
-}
-
-cov_bootstrap <- function(fit, bootstrap_method, B) {
-  if (!(bootstrap_method %in% c(NULL, "iid", "stationary")))
-    stop("bootstrap_method can be NULL, iid or stationary")
-  if (B < 1000)
-    warning("The number of bootstrap iterations is small!")
-
-  # Draw the bootstrap indices
-  n <- length(fit$y)
-  idx <- matrix(sample(1:n, size = n * B, replace = TRUE), nrow = n)
-
-  # Use the one_shot estimation approach for speed
-  b <- apply(idx, 2, function(id) {
-    fitb <- esreg(fit$y[id] ~ fit$xq[id, -1] | fit$xe[id, -1],
-                  alpha = fit$alpha, g1 = fit$g1, g2 = fit$g2,
-                  early_stopping = 0)
-    fitb$coefficients
-  })
-
-  # Compute the covariance
-  cov <- stats::cov(t(b))
 }
