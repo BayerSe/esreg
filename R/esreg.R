@@ -151,9 +151,9 @@ print.summary.esreg <- function(x, ...) {
   ke <- length(x$coefficients_e)
   cat("Call:\n", paste0(deparse(x$call), sep = "\n", collapse = "\n"))
   cat("\nQuantile Coefficients:\n")
-  stats::printCoefmat(x$coef_mat[1:kq,], signif.legend = FALSE)
+  stats::printCoefmat(x$coef_mat[1:kq,,drop=FALSE], signif.legend = FALSE)
   cat("\nExpected Shortfall Coefficients:\n")
-  stats::printCoefmat(x$coef_mat[(kq+1):(kq+ke),])
+  stats::printCoefmat(x$coef_mat[(kq+1):(kq+ke),,drop=FALSE])
 }
 
 
