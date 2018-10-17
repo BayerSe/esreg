@@ -287,9 +287,9 @@ vcovB <-function(object, bootstrap_method='iid', B=1000) {
   n <- length(object$y)
   idx <- matrix(sample(1:n, size = n * B, replace = TRUE), nrow = n)
 
-  # Use the one_shot estimation approach for speed
-  b <- apply(idx, 2, function(id) {
-    fitb <- esreg(object$y[id] ~ object$xq[id, -1] | object$xe[id, -1],
+  # Get the bootstrap parameter estimates
+  b <- sapply(seq_len(B), function(i) {
+    fitb <- esreg(object$y[idx[,i]] ~ object$xq[idx[,i], -1] | object$xe[idx[,i], -1],
                   alpha = object$alpha, g1 = object$g1, g2 = object$g2,
                   early_stopping = 0)
     fitb$coefficients
@@ -340,6 +340,14 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
   # Store the coefficient estimates
   b0 <- c(fit_qr_q$coef, fit_qr_e$coef)
 
+  # If G2 is 1, 2, 3 ensure that x'be < 0 by moving the es intercept
+  kq <- ncol(xq)
+  ke <- ncol(xe)
+  if (g2 %in% c(1, 2, 3)) {
+    max_xe <- max(xe %*% b0[(kq+1):(kq+ke)])
+    b0[kq+1] <- b0[kq+1] - (max_xe + 0.1) * (max_xe >= 0)
+  }
+
   # Set the target function
   fun <- function(b) suppressWarnings(
     esr_rho_lp(b = b, y = y, xq = xq, xe = xe, alpha = alpha, g1 = g1, g2 = g2)
@@ -350,8 +358,6 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
   fit <- try(stats::optim(par = b0, fn = fun, method = "Nelder-Mead"), silent = TRUE)
 
   # Counts the iterations without decrease of the loss
-  kq <- ncol(xq)
-  ke <- ncol(xe)
   counter <- 0
   while (counter < early_stopping) {
     # Perturbe b
@@ -360,7 +366,7 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
     # If G2 is 1, 2, 3 ensure that x'be < 0 by moving the es intercept
     if (g2 %in% c(1, 2, 3)) {
       max_xe <- max(xe %*% bt[(kq+1):(kq+ke)])
-      bt[kq+1] <- bt[kq+1] - (max_xe + 0.1) * (max_xe > 0)
+      bt[kq+1] <- bt[kq+1] - (max_xe + 0.1) * (max_xe >= 0)
     }
 
     # Fit the model with the perturbed parameters
