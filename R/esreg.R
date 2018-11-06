@@ -355,7 +355,8 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
 
   ## Optimize the model using iterated local search
   # Initial optimization
-  fit <- try(stats::optim(par = b0, fn = fun, method = "Nelder-Mead"), silent = TRUE)
+  fit <- try(stats::optim(par = b0, fn = fun, method = "Nelder-Mead",
+                          control = list(maxit = 2000)), silent = TRUE)
 
   # Counts the iterations without decrease of the loss
   counter <- 0
@@ -370,7 +371,8 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
     }
 
     # Fit the model with the perturbed parameters
-    tmp_fit <- try(stats::optim(par = bt, fn = fun, method = "Nelder-Mead"), silent = TRUE)
+    tmp_fit <- try(stats::optim(par = bt, fn = fun, method = "Nelder-Mead",
+                                control = list(maxit = 2000)), silent = TRUE)
 
     # Replace the fit if the new loss is smaller than the old. Otherwise increase the counter.
     if (!inherits(tmp_fit, "try-error")) {
