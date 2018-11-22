@@ -33,14 +33,14 @@ arma::mat l_esreg_covariance(
       xxe = xei.t() * xei;
       xxeq = xei.t() * xqi;
 
-      lambda_11 += xxq * density(i) * (G1_prime_xq(i) + G2_xe(i)/alpha);
+      lambda_11 += 1/alpha * xxq * density(i) * (alpha*G1_prime_xq(i) + G2_xe(i));
       lambda_22 += xxe * G2_prime_xe(i);
 
-      C_11 += xxq * (1-alpha)/alpha * pow(alpha*G1_prime_xq(i) + G2_xe(i), 2);
-      C_12 += xxeq * (xbe(i) - xbq(i)) * (alpha*G1_prime_xq(i) +
-        G2_xe(i)) * G2_prime_xe(i);
+      C_11 += (1-alpha)/alpha * xxq * pow(alpha*G1_prime_xq(i) + G2_xe(i), 2);
+      C_12 += (1-alpha)/alpha * xxeq * (xbq(i) - xbe(i)) *
+        (alpha*G1_prime_xq(i) + G2_xe(i)) * G2_prime_xe(i);
       C_22 += xxe * pow(G2_prime_xe(i), 2) * (conditional_variance(i)/alpha +
-        (1-alpha)/alpha * pow(xbe(i) - xbq(i), 2));
+        (1-alpha)/alpha * pow(xbq(i) - xbe(i), 2));
     }
 
     // Fill the matrices
