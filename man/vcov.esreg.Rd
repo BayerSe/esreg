@@ -2,7 +2,7 @@
 % Please edit documentation in R/esreg.R
 \name{vcov.esreg}
 \alias{vcov.esreg}
-\title{Covariance Estimation for esreg}
+\title{Covariance Estimation}
 \usage{
 \method{vcov}{esreg}(object, sparsity = "iid", cond_var = "ind",
   bandwidth_type = "Hall-Sheather", ...)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/esreg.R
 \name{vcovB}
 \alias{vcovB}
-\title{Bootstrap Covariance Estimation for esreg}
+\title{Bootstrap Covariance Estimation}
 \usage{
 vcovB(object, bootstrap_method = "iid", B = 1000)
 }
