@@ -231,7 +231,7 @@ double esr_rho_lp(const arma::colvec& b, const arma::colvec& y,
     xbe = as_scalar(xei.t() * be);
 
     // Check the shortfall
-    if (((g2 == 1) | (g2 == 2) | (g2 == 3)) & (xbe >= 0)) {
+    if (((g2 == 1) | (g2 == 2) | (g2 == 3)) & (xbe >= -0.01)) {
       Rcpp::warning("x'b_e can not be positive for g2 1, 2, 3!");
       return NA_REAL;
     }
