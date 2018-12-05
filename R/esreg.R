@@ -345,7 +345,7 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
   ke <- ncol(xe)
   if (g2 %in% c(1, 2, 3)) {
     max_xe <- max(xe %*% b0[(kq+1):(kq+ke)])
-    b0[kq+1] <- b0[kq+1] - (max_xe + 0.1) * (max_xe >= 0)
+    b0[kq+1] <- b0[kq+1] - (max_xe + 0.1) * (max_xe >= -0.1)
   }
 
   # Set the target function
