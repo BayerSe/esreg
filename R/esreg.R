@@ -84,7 +84,6 @@ esreg.formula <- function(formula, data=parent.frame(), alpha, g1 = 2L, g2 = 1L,
     stop('You must not have more than two formula objects.')
   }
   mf <- stats::model.frame(formula = formula, data = data, na.action = stats::na.pass)
-  terms <- attr(mf, 'terms')
 
   # Extract the data matrices
   xq <- stats::model.matrix(formula, mf, rhs=1)
@@ -94,6 +93,7 @@ esreg.formula <- function(formula, data=parent.frame(), alpha, g1 = 2L, g2 = 1L,
   # Fit the model
   fit <- esreg.fit(xq, xe, y, alpha, g1, g2, early_stopping)
   fit$call <- match.call()
+  fit$formula <- formula
 
   fit
 }
@@ -107,6 +107,7 @@ esreg.default <- function(xq, xe, y, alpha, g1 = 2L, g2 = 1L,
   xq <- cbind("(Intercept)" = 1, xq)
   xe <- cbind("(Intercept)" = 1, xe)
 
+  # Fit the model
   fit <- esreg.fit(xq, xe, y, alpha, g1, g2, early_stopping)
   fit$call <- match.call()
 
@@ -172,8 +173,24 @@ residuals.esreg <- function(object, ...) {
 }
 
 #' @export
-predict.esreg <- function(object, newdata, ...) {
-  print('To be implemented')
+predict.esreg <- function(object, newdata=NULL, ...) {
+  chkDots(...)
+  if (is.null(newdata)) {
+    yhat <- fitted.esreg(object)
+  } else {
+    if (nrow(newdata) == 0) stop('newdata is empty')
+    if (is.null(object$formula)) {
+      stop('The predict method is only supported using the formula interface')
+    } else {
+      mf <- stats::model.frame(object$formula, newdata)
+      xq <- stats::model.matrix(object$formula, mf, rhs=1)
+      xe <- stats::model.matrix(object$formula, mf, rhs=2)
+      yhat <- cbind(xq %*% object$coefficients_q,
+                    xe %*% object$coefficients_e)
+    }
+  }
+
+  yhat
 }
 
 #' @title Covariance Estimation
