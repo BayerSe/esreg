@@ -2,11 +2,13 @@
 % Please edit documentation in R/esreg.R
 \name{vcov.esreg}
 \alias{vcov.esreg}
-\title{Asymptotiv Covariance Estimation}
+\title{Covariance Estimation}
 \usage{
 \method{vcov}{esreg}(object, method = "asymptotic", ...)
 }
 \arguments{
+\item{object}{An esreg object}
+
 \item{method}{For asymptotic use \link{vcovA}, for boot use \link{vcovB}}
 
 \item{...}{All possible values which can be passed to \link{vcovA} and \link{vcovB}}

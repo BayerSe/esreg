@@ -15,8 +15,6 @@ vcovB(object, bootstrap_method = "iid", B = 1000)
 }}
 
 \item{B}{The number of bootstrap iterations}
-
-\item{...}{Further arguments (does not apply here)}
 }
 \description{
 Estimate the variance-covariance matrix of the joint (VaR, ES) estimator

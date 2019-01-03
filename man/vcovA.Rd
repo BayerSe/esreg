@@ -2,10 +2,10 @@
 % Please edit documentation in R/esreg.R
 \name{vcovA}
 \alias{vcovA}
-\title{Asymptotiv Covariance Estimation}
+\title{AsymptotiC Covariance Estimation}
 \usage{
 vcovA(object, sparsity = "iid", cond_var = "ind",
-  bandwidth_type = "Hall-Sheather", ...)
+  bandwidth_type = "Hall-Sheather")
 }
 \arguments{
 \item{object}{An esreg object}
@@ -31,8 +31,6 @@ see \link{conditional_truncated_variance} for more details.
   \item Chamberlain
   \item Hall-Sheather
 }}
-
-\item{...}{Further arguments (does not apply here)}
 }
 \description{
 Estimate the variance-covariance matrix of the joint (VaR, ES) estimator

@@ -193,8 +193,9 @@ predict.esreg <- function(object, newdata=NULL, ...) {
   yhat
 }
 
-#' @title Asymptotiv Covariance Estimation
+#' @title Covariance Estimation
 #' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+#' @param object An esreg object
 #' @param method For asymptotic use \link{vcovA}, for boot use \link{vcovB}
 #' @param ... All possible values which can be passed to \link{vcovA} and \link{vcovB}
 #' @export
@@ -232,11 +233,9 @@ vcov.esreg <- function(object, method='asymptotic', ...) {
 #'    \item Chamberlain
 #'    \item Hall-Sheather
 #'  }
-#' @param ... Further arguments (does not apply here)
 #' @export
 vcovA <- function(object, sparsity = 'iid', cond_var = 'ind',
-                  bandwidth_type = 'Hall-Sheather', ...) {
-  chkDots(...)
+                  bandwidth_type = 'Hall-Sheather') {
   if(!(sparsity %in% c("iid", "nid")))
     stop("sparsity can be iid or nid")
   if(!(cond_var %in% c("ind", "scl_N", "scl_sp")))
@@ -308,10 +307,8 @@ vcovA <- function(object, sparsity = 'iid', cond_var = 'ind',
 #'     \item iid - The iid bootstrap of Efron (1979)
 #'   }
 #' @param B The number of bootstrap iterations
-#' @param ... Further arguments (does not apply here)
 #' @export
 vcovB <-function(object, bootstrap_method='iid', B=1000) {
-  chkDots(...)
   if (!(bootstrap_method %in% c("iid")))
     stop("bootstrap_method can be iid")
   if (B < 1000)
