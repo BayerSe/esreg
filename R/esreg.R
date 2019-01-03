@@ -300,6 +300,11 @@ vcovB <-function(object, bootstrap_method='iid', B=1000) {
   if (B < 1000)
     warning("The number of bootstrap iterations is small!")
 
+  # Set local seed
+  old_seed <- .Random.seed
+  on.exit( { .Random.seed <<- old_seed } )
+  set.seed(1)
+
   # Draw the bootstrap indices
   n <- length(object$y)
   idx <- matrix(sample(1:n, size = n * B, replace = TRUE), nrow = n)
@@ -320,6 +325,11 @@ vcovB <-function(object, bootstrap_method='iid', B=1000) {
 
 esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
   t0 <- Sys.time()
+
+  # Set local seed
+  old_seed <- .Random.seed
+  on.exit( { .Random.seed <<- old_seed } )
+  set.seed(1)
 
   # Check input parameters and data
   if (!(g1 %in% c(1, 2))) stop("G1 can be 1 or 2.")
