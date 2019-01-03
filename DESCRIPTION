@@ -15,7 +15,8 @@ Imports:
     quantreg,
     Rcpp,
     stats,
-    Formula
+    Formula,
+    robustbase
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
