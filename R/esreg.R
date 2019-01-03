@@ -193,7 +193,23 @@ predict.esreg <- function(object, newdata=NULL, ...) {
   yhat
 }
 
-#' @title Covariance Estimation
+#' @title Asymptotiv Covariance Estimation
+#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+#' @param method For asymptotic use \link{vcovA}, for boot use \link{vcovB}
+#' @param ... All possible values which can be passed to \link{vcovA} and \link{vcovB}
+#' @export
+vcov.esreg <- function(object, method='asymptotic', ...) {
+  if (method == 'asymptotic') {
+    cov <- vcovA(object, ...)
+  } else if(method == 'boot') {
+    cov <- vcovB(object, ...)
+  } else {
+    stop('method can be asymptotic or boot')
+  }
+  cov
+}
+
+#' @title AsymptotiC Covariance Estimation
 #' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
 #' using the asymptotic formulas
 #' @param object An esreg object
@@ -218,8 +234,8 @@ predict.esreg <- function(object, newdata=NULL, ...) {
 #'  }
 #' @param ... Further arguments (does not apply here)
 #' @export
-vcov.esreg <- function(object, sparsity = 'iid', cond_var = 'ind',
-                       bandwidth_type = 'Hall-Sheather', ...) {
+vcovA <- function(object, sparsity = 'iid', cond_var = 'ind',
+                  bandwidth_type = 'Hall-Sheather', ...) {
   chkDots(...)
   if(!(sparsity %in% c("iid", "nid")))
     stop("sparsity can be iid or nid")
@@ -295,8 +311,9 @@ vcov.esreg <- function(object, sparsity = 'iid', cond_var = 'ind',
 #' @param ... Further arguments (does not apply here)
 #' @export
 vcovB <-function(object, bootstrap_method='iid', B=1000) {
-  if (!(bootstrap_method %in% c(NULL, "iid", "stationary")))
-    stop("bootstrap_method can be NULL, iid or stationary")
+  chkDots(...)
+  if (!(bootstrap_method %in% c("iid")))
+    stop("bootstrap_method can be iid")
   if (B < 1000)
     warning("The number of bootstrap iterations is small!")
 
@@ -318,7 +335,7 @@ vcovB <-function(object, bootstrap_method='iid', B=1000) {
   })
 
   # Compute the covariance
-  cov <- stats::cov(t(b))
+  cov <- robustbase::covMcd(t(b), nsamp = 'deterministic')$cov
   rownames(cov) <- colnames(cov) <- names(stats::coef(object))
   cov
 }
