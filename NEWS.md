@@ -2,7 +2,6 @@
 * Allow different covariates in the quantile and the expected shortfall regression
 * Restructure the package using the recommendations provided here: http://www.milbo.org/doc/modguide.pdf
 * Remove unused pieces of code and simplify handling
-* Estimate bootstrap covariance using a robust estimator
 
 # 0.3.2
 Improved speed of the semi-parametric covariance estimator

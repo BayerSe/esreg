@@ -2,7 +2,7 @@ Package: esreg
 Type: Package
 Title: Joint Quantile and Expected Shortfall Regression
 Version: 0.4.0
-Date: 2018-10-14
+Date: 2019-01-04
 Authors@R: c(person('Sebastian', 'Bayer', email='sebastian.bayer@uni-konstanz.de', role=c('aut', 'cre')), 
              person('Timo', 'Dimitriadis', role='aut'))
 Description: 
@@ -15,8 +15,7 @@ Imports:
     quantreg,
     Rcpp,
     stats,
-    Formula,
-    robustbase
+    Formula
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
