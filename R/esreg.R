@@ -210,7 +210,7 @@ vcov.esreg <- function(object, method='asymptotic', ...) {
   cov
 }
 
-#' @title AsymptotiC Covariance Estimation
+#' @title Asymptotic Covariance Estimation
 #' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
 #' using the asymptotic formulas
 #' @param object An esreg object
