@@ -2,7 +2,7 @@
 % Please edit documentation in R/esreg.R
 \name{vcovA}
 \alias{vcovA}
-\title{AsymptotiC Covariance Estimation}
+\title{Asymptotic Covariance Estimation}
 \usage{
 vcovA(object, sparsity = "iid", cond_var = "ind",
   bandwidth_type = "Hall-Sheather")
