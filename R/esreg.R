@@ -332,6 +332,20 @@ vcovB <-function(object, bootstrap_method='iid', B=1000) {
   cov
 }
 
+#' @title Covariance Estimation under Misspecification
+#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+#' using TODO.
+#' @param object An esreg object
+#' @export
+vcovMS <-function(object) {
+  sigma <- sigma_matrix(object)
+  lambda <- lambda_matrix(object)
+  lambda_inv <- chol2inv(chol(lambda))
+  cov <- lambda_inv %*% sigma %*% lambda_inv / length(object$y)
+  rownames(cov) <- colnames(cov) <- names(stats::coef(object))
+  cov
+}
+
 esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
   t0 <- Sys.time()
 

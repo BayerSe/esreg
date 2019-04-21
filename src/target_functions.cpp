@@ -245,3 +245,137 @@ double esr_rho_lp(const arma::colvec& b, const arma::colvec& y,
 
   return out / n;
 }
+
+
+//' @keywords internal
+// [[Rcpp::export]]
+arma::mat sigma_matrix(const Rcpp::List & object) {
+  // Extract quantities from list input
+  arma::vec bq = Rcpp::as<arma::vec>(object["coefficients_q"]);
+  arma::vec be = Rcpp::as<arma::vec>(object["coefficients_e"]);
+
+  arma::vec y = Rcpp::as<arma::vec>(object["y"]);
+  arma::mat xq = Rcpp::as<arma::mat>(object["xq"]);
+  arma::mat xe = Rcpp::as<arma::mat>(object["xe"]);
+
+  double alpha = Rcpp::as<double>(object["alpha"]);
+  int g1 = Rcpp::as<double>(object["g1"]);
+  int g2 = Rcpp::as<double>(object["g2"]);
+
+  // Extract dimensions
+  int n = y.n_elem;
+  int kq = xq.n_cols;
+  int ke = xe.n_cols;
+
+  // Initialize variables
+  double yi, xbq, xbe, h;
+  arma::mat xqi, xei;
+  arma::mat psi = arma::zeros<arma::mat>(n, kq + ke);
+
+  // Transform input variables
+  if (((g2 == 1) | (g2 == 2) | (g2 == 3))) {
+    double max_y = max(y);
+    y -= max_y;
+    bq(0) -= max_y;
+    be(0) -= max_y;
+  }
+
+  // Loop over the observations
+  for (int i = 0; i < n; i++) {
+    yi = y(i);
+    xqi = xq.row(i);
+    xei = xe.row(i);
+    xbq = as_scalar(xqi * bq);
+    xbe = as_scalar(xei * be);
+
+    // Check the shortfall
+    if (((g2 == 1) | (g2 == 2) | (g2 == 3)) & (xbe >= 0)) {
+      Rcpp::warning("x'b_e can not be positive for g2 1, 2, 3!");
+      return arma::mat(n, kq+ke).fill(NA_REAL);
+    }
+
+    // Hit variable
+    h = yi <= xbq;
+
+    // Fill the matrix
+    psi.submat(i, 0, i, kq-1) = xqi * (G1_prime_fun(xbq, g1) + G2_fun(xbe, g2)/alpha) * (h - alpha);
+    psi.submat(i, kq, i, kq+ke-1) = xei *  G2_prime_fun(xbe, g2) * (xbe - xbq + (xbq - yi) * h / alpha);
+  }
+
+  // Compute the crossproduct
+  arma::mat sigma = psi.t() * psi / n;
+
+  return sigma;
+}
+
+
+//' @keywords internal
+// [[Rcpp::export]]
+arma::mat lambda_matrix(const Rcpp::List & object) {
+  // Extract quantities from list input
+  arma::vec bq = Rcpp::as<arma::vec>(object["coefficients_q"]);
+  arma::vec be = Rcpp::as<arma::vec>(object["coefficients_e"]);
+
+  arma::vec y = Rcpp::as<arma::vec>(object["y"]);
+  arma::mat xq = Rcpp::as<arma::mat>(object["xq"]);
+  arma::mat xe = Rcpp::as<arma::mat>(object["xe"]);
+
+  double alpha = Rcpp::as<double>(object["alpha"]);
+  int g1 = Rcpp::as<double>(object["g1"]);
+  int g2 = Rcpp::as<double>(object["g2"]);
+
+  // Extract dimensions
+  int n = y.n_elem;
+  int kq = xq.n_cols;
+  int ke = xe.n_cols;
+
+  // Define some 0-matrices
+  arma::mat lambda_11 = arma::zeros<arma::mat>(kq, kq);
+  arma::mat lambda_12 = arma::zeros<arma::mat>(kq, ke);
+  arma::mat lambda_22 = arma::zeros<arma::mat>(ke, ke);
+
+  arma::mat lambda = arma::zeros<arma::mat>(kq+ke, kq+ke);
+
+  arma::mat xqi, xei, xxq, xxe, xxqe;
+  double yi, xbqi, xbei, h, hit;
+  double ct = pow(n, -1.0/3.0);
+  //Rcpp::Rcout << "The value is " << ct << std::endl;
+
+  // Transform input variables
+  if (((g2 == 1) | (g2 == 2) | (g2 == 3))) {
+    double max_y = max(y);
+    y -= max_y;
+    bq(0) -= max_y;
+    be(0) -= max_y;
+  }
+
+  // Compute the matrix elements
+  for (int i = 0; i < n; i++) {
+    yi = y(i);
+
+    xqi = xq.row(i);
+    xei = xe.row(i);
+
+    xxq = xqi.t() * xqi;
+    xxe = xei.t() * xei;
+    xxqe = xqi.t() * xei;
+
+    xbqi = as_scalar(xqi * bq);
+    xbei = as_scalar(xei * be);
+
+    h = std::abs(yi - xbqi) <= ct;
+    hit = yi <= xbqi;
+
+    lambda_11 += -1/alpha * xxq / xbei * h / (2*ct);
+    lambda_12 += xxqe / pow(xbei, 2) * (hit - alpha);
+    lambda_22 += xxe / pow(xbei, 2) - 2 * xxe / pow(xbei, 3) * (xbei - yi/alpha*hit + xbqi * (hit-alpha)/alpha);
+  }
+
+  // Fill the matrices
+  lambda.submat(0, 0, kq-1, kq-1) = lambda_11 / n;
+  lambda.submat(0, kq, kq-1, kq+ke-1) = lambda_12 / n;
+  lambda.submat(kq, 0, kq+ke-1, kq-1) = lambda_12.t() / n;
+  lambda.submat(kq, kq, kq+ke-1, kq+ke-1) = lambda_22 / n;
+
+  return lambda;
+}

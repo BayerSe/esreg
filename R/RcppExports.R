@@ -114,3 +114,13 @@ esr_rho_lp <- function(b, y, xq, xe, alpha, g1 = 2L, g2 = 1L) {
     .Call('_esreg_esr_rho_lp', PACKAGE = 'esreg', b, y, xq, xe, alpha, g1, g2)
 }
 
+#' @keywords internal
+sigma_matrix <- function(object) {
+    .Call('_esreg_sigma_matrix', PACKAGE = 'esreg', object)
+}
+
+#' @keywords internal
+lambda_matrix <- function(object) {
+    .Call('_esreg_lambda_matrix', PACKAGE = 'esreg', object)
+}
+

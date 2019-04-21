@@ -116,6 +116,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sigma_matrix
+arma::mat sigma_matrix(const Rcpp::List& object);
+RcppExport SEXP _esreg_sigma_matrix(SEXP objectSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type object(objectSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigma_matrix(object));
+    return rcpp_result_gen;
+END_RCPP
+}
+// lambda_matrix
+arma::mat lambda_matrix(const Rcpp::List& object);
+RcppExport SEXP _esreg_lambda_matrix(SEXP objectSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type object(objectSEXP);
+    rcpp_result_gen = Rcpp::wrap(lambda_matrix(object));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_esreg_l_esreg_covariance", (DL_FUNC) &_esreg_l_esreg_covariance, 10},
@@ -126,6 +148,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_esreg_G2_prime_fun", (DL_FUNC) &_esreg_G2_prime_fun, 2},
     {"_esreg_G_vec", (DL_FUNC) &_esreg_G_vec, 3},
     {"_esreg_esr_rho_lp", (DL_FUNC) &_esreg_esr_rho_lp, 7},
+    {"_esreg_sigma_matrix", (DL_FUNC) &_esreg_sigma_matrix, 1},
+    {"_esreg_lambda_matrix", (DL_FUNC) &_esreg_lambda_matrix, 1},
     {NULL, NULL, 0}
 };
 
