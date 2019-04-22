@@ -337,12 +337,50 @@ vcovB <-function(object, bootstrap_method='iid', B=1000) {
 #' using TODO.
 #' @param object An esreg object
 #' @export
-vcovMS <-function(object, sparsity = 'nid', bandwidth_type = 'Hall-Sheather') {
-  uq <- as.numeric(object$y - as.numeric(object$xq %*% object$coefficients_q))
-  dens <- density_quantile_function(y = object$y, x = object$xq, u = uq, alpha = object$alpha,
+vcovMS <-function(object, sparsity = 'nid', bandwidth_type = 'Hall-Sheather', cond_var='nid') {
+  # Extract some elements
+  y <- object$y
+  xq <- object$xq
+  xe <- object$xe
+  n <- nrow(xq)
+  kq <- ncol(xq)
+  ke <- ncol(xe)
+  coefficients_q <- object$coefficients_q
+  coefficients_e <- object$coefficients_e
+
+  # Transform the data and coefficients
+  if (object$g2 %in% c(1, 2, 3)) {
+    max_y <- max(y)
+    y <- y - max_y
+    coefficients_q[1] <- coefficients_q[1] - max_y
+    coefficients_e[1] <- coefficients_e[1] - max_y
+  }
+
+  # Precompute some quantities
+  xbq <- as.numeric(xq %*% coefficients_q)
+  xbe <- as.numeric(xe %*% coefficients_e)
+  uq <- as.numeric(y - xbq)
+
+  # Density quantile function
+  dens <- density_quantile_function(y = y, x = xq, u = uq, alpha = object$alpha,
                                     sparsity = sparsity, bandwidth_type = bandwidth_type)
 
-  sigma <- sigma_matrix(object)
+  # Truncated conditional variance
+  cv <- conditional_truncated_variance(y = uq, x = xq, approach = cond_var)
+
+  # Evaluate G1 / G2 functions
+  G1_prime_xq <- G_vec(z = xbq, g = "G1_prime", type = object$g1)
+  G2_xe <- G_vec(z = xbe, g = "G2", type = object$g2)
+  G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
+
+  # Compute the covariance matrix
+  sigma <- sigma_matrix_old_version(
+    xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = object$alpha,
+    G1_prime_xq = G1_prime_xq,
+    G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
+    density = dens, conditional_variance = cv)
+
+  # sigma <- esreg:::sigma_matrix(object)
   lambda <- lambda_matrix(object, dens)
   lambda_inv <- chol2inv(chol(lambda))
   cov <- lambda_inv %*% sigma %*% lambda_inv / length(object$y)

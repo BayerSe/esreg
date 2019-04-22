@@ -6,6 +6,16 @@ l_esreg_covariance <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe
     .Call('_esreg_l_esreg_covariance', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
 }
 
+#' @keywords internal
+sigma_matrix_old_version <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha) {
+    .Call('_esreg_sigma_matrix_old_version', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
+}
+
+#' @keywords internal
+test_lambda <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha) {
+    .Call('_esreg_test_lambda', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
+}
+
 #' @title Specification Function
 #' @description G1
 #' @param z Data

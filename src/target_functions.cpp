@@ -337,9 +337,7 @@ arma::mat lambda_matrix(const Rcpp::List & object, arma:: vec density) {
   arma::mat lambda = arma::zeros<arma::mat>(kq+ke, kq+ke);
 
   arma::mat xqi, xei, xxq, xxe, xxqe;
-  double yi, xbqi, xbei, h, hit, d;
-  double ct = pow(n, -1.0/3.0);
-  //Rcpp::Rcout << "The value is " << ct << std::endl;
+  double yi, xbqi, xbei, hit;
 
   // Transform input variables
   if (((g2 == 1) | (g2 == 2) | (g2 == 3))) {
@@ -363,20 +361,17 @@ arma::mat lambda_matrix(const Rcpp::List & object, arma:: vec density) {
     xbqi = as_scalar(xqi * bq);
     xbei = as_scalar(xei * be);
 
-    h = std::abs(yi - xbqi) <= ct;
     hit = yi <= xbqi;
-    // d = h / (2*ct);
-    d = density(i);
 
-    lambda_11 += -1/alpha * xxq / xbei * d;
+    lambda_11 += -1/alpha * xxq / xbei * density(i);
     lambda_12 += xxqe / pow(xbei, 2) * (hit - alpha);
-    lambda_22 += xxe / pow(xbei, 2);// - 2 * xxe / pow(xbei, 3) * (xbei - yi/alpha*hit + xbqi * (hit-alpha)/alpha);
+    lambda_22 += xxe / pow(xbei, 2) - 2 * xxe / pow(xbei, 3) * (xbei - yi/alpha*hit + xbqi * (hit-alpha)/alpha);
   }
 
   // Fill the matrices
   lambda.submat(0, 0, kq-1, kq-1) = lambda_11 / n;
-  // lambda.submat(0, kq, kq-1, kq+ke-1) = lambda_12 / n;
-  // lambda.submat(kq, 0, kq+ke-1, kq-1) = lambda_12.t() / n;
+  lambda.submat(0, kq, kq-1, kq+ke-1) = lambda_12 / n;
+  lambda.submat(kq, 0, kq+ke-1, kq-1) = lambda_12.t() / n;
   lambda.submat(kq, kq, kq+ke-1, kq+ke-1) = lambda_22 / n;
 
   return lambda;

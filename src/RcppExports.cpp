@@ -26,6 +26,46 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sigma_matrix_old_version
+arma::mat sigma_matrix_old_version(arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
+RcppExport SEXP _esreg_sigma_matrix_old_version(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type xq(xqSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type xe(xeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type xbq(xbqSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type xbe(xbeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G1_prime_xq(G1_prime_xqSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G2_xe(G2_xeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G2_prime_xe(G2_prime_xeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type density(densitySEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type conditional_variance(conditional_varianceSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(sigma_matrix_old_version(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test_lambda
+arma::mat test_lambda(arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
+RcppExport SEXP _esreg_test_lambda(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type xq(xqSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type xe(xeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type xbq(xbqSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type xbe(xbeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G1_prime_xq(G1_prime_xqSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G2_xe(G2_xeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G2_prime_xe(G2_prime_xeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type density(densitySEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type conditional_variance(conditional_varianceSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(test_lambda(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
 // G1_fun
 double G1_fun(double z, int type);
 RcppExport SEXP _esreg_G1_fun(SEXP zSEXP, SEXP typeSEXP) {
@@ -142,6 +182,8 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_esreg_l_esreg_covariance", (DL_FUNC) &_esreg_l_esreg_covariance, 10},
+    {"_esreg_sigma_matrix_old_version", (DL_FUNC) &_esreg_sigma_matrix_old_version, 10},
+    {"_esreg_test_lambda", (DL_FUNC) &_esreg_test_lambda, 10},
     {"_esreg_G1_fun", (DL_FUNC) &_esreg_G1_fun, 2},
     {"_esreg_G1_prime_fun", (DL_FUNC) &_esreg_G1_prime_fun, 2},
     {"_esreg_G2_curly_fun", (DL_FUNC) &_esreg_G2_curly_fun, 2},
