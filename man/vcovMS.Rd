@@ -4,7 +4,7 @@
 \alias{vcovMS}
 \title{Covariance Estimation under Misspecification}
 \usage{
-vcovMS(object)
+vcovMS(object, sparsity = "nid", bandwidth_type = "Hall-Sheather")
 }
 \arguments{
 \item{object}{An esreg object}

@@ -120,7 +120,7 @@ sigma_matrix <- function(object) {
 }
 
 #' @keywords internal
-lambda_matrix <- function(object) {
-    .Call('_esreg_lambda_matrix', PACKAGE = 'esreg', object)
+lambda_matrix <- function(object, density) {
+    .Call('_esreg_lambda_matrix', PACKAGE = 'esreg', object, density)
 }
 

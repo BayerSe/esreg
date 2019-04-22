@@ -128,13 +128,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // lambda_matrix
-arma::mat lambda_matrix(const Rcpp::List& object);
-RcppExport SEXP _esreg_lambda_matrix(SEXP objectSEXP) {
+arma::mat lambda_matrix(const Rcpp::List& object, arma:: vec density);
+RcppExport SEXP _esreg_lambda_matrix(SEXP objectSEXP, SEXP densitySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const Rcpp::List& >::type object(objectSEXP);
-    rcpp_result_gen = Rcpp::wrap(lambda_matrix(object));
+    Rcpp::traits::input_parameter< arma:: vec >::type density(densitySEXP);
+    rcpp_result_gen = Rcpp::wrap(lambda_matrix(object, density));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -149,7 +150,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_esreg_G_vec", (DL_FUNC) &_esreg_G_vec, 3},
     {"_esreg_esr_rho_lp", (DL_FUNC) &_esreg_esr_rho_lp, 7},
     {"_esreg_sigma_matrix", (DL_FUNC) &_esreg_sigma_matrix, 1},
-    {"_esreg_lambda_matrix", (DL_FUNC) &_esreg_lambda_matrix, 1},
+    {"_esreg_lambda_matrix", (DL_FUNC) &_esreg_lambda_matrix, 2},
     {NULL, NULL, 0}
 };
 

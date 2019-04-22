@@ -337,9 +337,13 @@ vcovB <-function(object, bootstrap_method='iid', B=1000) {
 #' using TODO.
 #' @param object An esreg object
 #' @export
-vcovMS <-function(object) {
+vcovMS <-function(object, sparsity = 'nid', bandwidth_type = 'Hall-Sheather') {
+  uq <- as.numeric(object$y - as.numeric(object$xq %*% object$coefficients_q))
+  dens <- density_quantile_function(y = object$y, x = object$xq, u = uq, alpha = object$alpha,
+                                    sparsity = sparsity, bandwidth_type = bandwidth_type)
+
   sigma <- sigma_matrix(object)
-  lambda <- lambda_matrix(object)
+  lambda <- lambda_matrix(object, dens)
   lambda_inv <- chol2inv(chol(lambda))
   cov <- lambda_inv %*% sigma %*% lambda_inv / length(object$y)
   rownames(cov) <- colnames(cov) <- names(stats::coef(object))

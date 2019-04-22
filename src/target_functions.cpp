@@ -311,7 +311,7 @@ arma::mat sigma_matrix(const Rcpp::List & object) {
 
 //' @keywords internal
 // [[Rcpp::export]]
-arma::mat lambda_matrix(const Rcpp::List & object) {
+arma::mat lambda_matrix(const Rcpp::List & object, arma:: vec density) {
   // Extract quantities from list input
   arma::vec bq = Rcpp::as<arma::vec>(object["coefficients_q"]);
   arma::vec be = Rcpp::as<arma::vec>(object["coefficients_e"]);
@@ -337,7 +337,7 @@ arma::mat lambda_matrix(const Rcpp::List & object) {
   arma::mat lambda = arma::zeros<arma::mat>(kq+ke, kq+ke);
 
   arma::mat xqi, xei, xxq, xxe, xxqe;
-  double yi, xbqi, xbei, h, hit;
+  double yi, xbqi, xbei, h, hit, d;
   double ct = pow(n, -1.0/3.0);
   //Rcpp::Rcout << "The value is " << ct << std::endl;
 
@@ -365,8 +365,10 @@ arma::mat lambda_matrix(const Rcpp::List & object) {
 
     h = std::abs(yi - xbqi) <= ct;
     hit = yi <= xbqi;
+    // d = h / (2*ct);
+    d = density(i);
 
-    lambda_11 += -1/alpha * xxq / xbei * h / (2*ct);
+    lambda_11 += -1/alpha * xxq / xbei * d;
     lambda_12 += xxqe / pow(xbei, 2) * (hit - alpha);
     lambda_22 += xxe / pow(xbei, 2);// - 2 * xxe / pow(xbei, 3) * (xbei - yi/alpha*hit + xbqi * (hit-alpha)/alpha);
   }
