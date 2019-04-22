@@ -368,13 +368,13 @@ arma::mat lambda_matrix(const Rcpp::List & object) {
 
     lambda_11 += -1/alpha * xxq / xbei * h / (2*ct);
     lambda_12 += xxqe / pow(xbei, 2) * (hit - alpha);
-    lambda_22 += xxe / pow(xbei, 2) - 2 * xxe / pow(xbei, 3) * (xbei - yi/alpha*hit + xbqi * (hit-alpha)/alpha);
+    lambda_22 += xxe / pow(xbei, 2);// - 2 * xxe / pow(xbei, 3) * (xbei - yi/alpha*hit + xbqi * (hit-alpha)/alpha);
   }
 
   // Fill the matrices
   lambda.submat(0, 0, kq-1, kq-1) = lambda_11 / n;
-  lambda.submat(0, kq, kq-1, kq+ke-1) = lambda_12 / n;
-  lambda.submat(kq, 0, kq+ke-1, kq-1) = lambda_12.t() / n;
+  // lambda.submat(0, kq, kq-1, kq+ke-1) = lambda_12 / n;
+  // lambda.submat(kq, 0, kq+ke-1, kq-1) = lambda_12.t() / n;
   lambda.submat(kq, kq, kq+ke-1, kq+ke-1) = lambda_22 / n;
 
   return lambda;
