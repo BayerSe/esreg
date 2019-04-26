@@ -60,16 +60,20 @@ true_pars <- c(-1.959964, -1.979982, -2.337803, -2.168901)
 fit <- esreg(y ~ x, alpha=alpha)
 
 # Compare the different variance-covariance estimators
-cov1 <- vcov(object=fit, sparsity="iid", cond_var="ind")
-cov2 <- vcov(object=fit, sparsity="nid", cond_var="scl_N")
-cov3 <- vcov(object=fit, sparsity="nid", cond_var="scl_sp")
+cov1 <- vcov(object=fit, sparsity="iid", sigma_est="ind")
+cov2 <- vcov(object=fit, sparsity="nid", sigma_est="scl_N")
+cov3 <- vcov(object=fit, sparsity="nid", sigma_est="scl_sp")
+cov4 <- vcov(object=fit, sparsity="nid", sigma_est="OPG")
+cov5 <- vcov(object=fit, sparsity="nid", sigma_est="OPG-HAC")
 
 print("Comparison of the variance-covariance estimators")
-print(rbind(Truth=true_pars,
+print(cbind(Truth=true_pars,
             Estimate=coef(fit),
             SE_iid_ind=sqrt(diag(cov1)),
             SE_nid_N=sqrt(diag(cov2)),
-            SE_nid_sp=sqrt(diag(cov3))))
+            SE_nid_sp=sqrt(diag(cov3)),
+            SE_nid_OPG=sqrt(diag(cov4)),
+            SE_nid_HAC=sqrt(diag(cov5))))
 
 # Compares estimates using different G2 functions
 fit1 <- esreg(y ~ x, alpha=alpha, g2=1)

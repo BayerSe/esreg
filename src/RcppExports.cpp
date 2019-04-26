@@ -26,29 +26,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sigma_matrix_old_version
-arma::mat sigma_matrix_old_version(arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
-RcppExport SEXP _esreg_sigma_matrix_old_version(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
+// lambda_matrix_loop
+arma::mat lambda_matrix_loop(arma::mat xq, arma::mat xe, arma::vec xbq, arma::vec xbe, arma::vec G1_prime_xq, arma::vec G2_xe, arma::vec G2_prime_xe, arma::vec G2_prime_prime_xe, arma::vec density, bool include_misspecification_terms, double alpha);
+RcppExport SEXP _esreg_lambda_matrix_loop(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP G2_prime_prime_xeSEXP, SEXP densitySEXP, SEXP include_misspecification_termsSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type xq(xqSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type xe(xeSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type xbq(xbqSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type xbe(xbeSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type G1_prime_xq(G1_prime_xqSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type G2_xe(G2_xeSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type G2_prime_xe(G2_prime_xeSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type density(densitySEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type conditional_variance(conditional_varianceSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type xbq(xbqSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type xbe(xbeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type G1_prime_xq(G1_prime_xqSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type G2_xe(G2_xeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type G2_prime_xe(G2_prime_xeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type G2_prime_prime_xe(G2_prime_prime_xeSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type density(densitySEXP);
+    Rcpp::traits::input_parameter< bool >::type include_misspecification_terms(include_misspecification_termsSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigma_matrix_old_version(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha));
+    rcpp_result_gen = Rcpp::wrap(lambda_matrix_loop(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, include_misspecification_terms, alpha));
     return rcpp_result_gen;
 END_RCPP
 }
-// test_lambda
-arma::mat test_lambda(arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec density, arma::colvec conditional_variance, double alpha);
-RcppExport SEXP _esreg_test_lambda(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP densitySEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
+// sigma_matrix_calculcated
+arma::mat sigma_matrix_calculcated(arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec conditional_variance, double alpha);
+RcppExport SEXP _esreg_sigma_matrix_calculcated(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP conditional_varianceSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -59,10 +60,28 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::colvec >::type G1_prime_xq(G1_prime_xqSEXP);
     Rcpp::traits::input_parameter< arma::colvec >::type G2_xe(G2_xeSEXP);
     Rcpp::traits::input_parameter< arma::colvec >::type G2_prime_xe(G2_prime_xeSEXP);
-    Rcpp::traits::input_parameter< arma::colvec >::type density(densitySEXP);
     Rcpp::traits::input_parameter< arma::colvec >::type conditional_variance(conditional_varianceSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(test_lambda(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha));
+    rcpp_result_gen = Rcpp::wrap(sigma_matrix_calculcated(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, alpha));
+    return rcpp_result_gen;
+END_RCPP
+}
+// estimating_function_loop
+arma::mat estimating_function_loop(arma::vec y, arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, double alpha);
+RcppExport SEXP _esreg_estimating_function_loop(SEXP ySEXP, SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP alphaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type xq(xqSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type xe(xeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type xbq(xbqSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type xbe(xbeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G1_prime_xq(G1_prime_xqSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G2_xe(G2_xeSEXP);
+    Rcpp::traits::input_parameter< arma::colvec >::type G2_prime_xe(G2_prime_xeSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    rcpp_result_gen = Rcpp::wrap(estimating_function_loop(y, xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, alpha));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -126,6 +145,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// G2_prime_prime
+double G2_prime_prime(double z, int type);
+RcppExport SEXP _esreg_G2_prime_prime(SEXP zSEXP, SEXP typeSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< double >::type z(zSEXP);
+    Rcpp::traits::input_parameter< int >::type type(typeSEXP);
+    rcpp_result_gen = Rcpp::wrap(G2_prime_prime(z, type));
+    return rcpp_result_gen;
+END_RCPP
+}
 // G_vec
 Rcpp::NumericVector G_vec(Rcpp::NumericVector z, Rcpp::String g, int type);
 RcppExport SEXP _esreg_G_vec(SEXP zSEXP, SEXP gSEXP, SEXP typeSEXP) {
@@ -156,43 +187,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sigma_matrix
-arma::mat sigma_matrix(const Rcpp::List& object);
-RcppExport SEXP _esreg_sigma_matrix(SEXP objectSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type object(objectSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigma_matrix(object));
-    return rcpp_result_gen;
-END_RCPP
-}
-// lambda_matrix
-arma::mat lambda_matrix(const Rcpp::List& object, arma:: vec density);
-RcppExport SEXP _esreg_lambda_matrix(SEXP objectSEXP, SEXP densitySEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const Rcpp::List& >::type object(objectSEXP);
-    Rcpp::traits::input_parameter< arma:: vec >::type density(densitySEXP);
-    rcpp_result_gen = Rcpp::wrap(lambda_matrix(object, density));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_esreg_l_esreg_covariance", (DL_FUNC) &_esreg_l_esreg_covariance, 10},
-    {"_esreg_sigma_matrix_old_version", (DL_FUNC) &_esreg_sigma_matrix_old_version, 10},
-    {"_esreg_test_lambda", (DL_FUNC) &_esreg_test_lambda, 10},
+    {"_esreg_lambda_matrix_loop", (DL_FUNC) &_esreg_lambda_matrix_loop, 11},
+    {"_esreg_sigma_matrix_calculcated", (DL_FUNC) &_esreg_sigma_matrix_calculcated, 9},
+    {"_esreg_estimating_function_loop", (DL_FUNC) &_esreg_estimating_function_loop, 9},
     {"_esreg_G1_fun", (DL_FUNC) &_esreg_G1_fun, 2},
     {"_esreg_G1_prime_fun", (DL_FUNC) &_esreg_G1_prime_fun, 2},
     {"_esreg_G2_curly_fun", (DL_FUNC) &_esreg_G2_curly_fun, 2},
     {"_esreg_G2_fun", (DL_FUNC) &_esreg_G2_fun, 2},
     {"_esreg_G2_prime_fun", (DL_FUNC) &_esreg_G2_prime_fun, 2},
+    {"_esreg_G2_prime_prime", (DL_FUNC) &_esreg_G2_prime_prime, 2},
     {"_esreg_G_vec", (DL_FUNC) &_esreg_G_vec, 3},
     {"_esreg_esr_rho_lp", (DL_FUNC) &_esreg_esr_rho_lp, 7},
-    {"_esreg_sigma_matrix", (DL_FUNC) &_esreg_sigma_matrix, 1},
-    {"_esreg_lambda_matrix", (DL_FUNC) &_esreg_lambda_matrix, 2},
     {NULL, NULL, 0}
 };
 

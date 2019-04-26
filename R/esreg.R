@@ -1,7 +1,9 @@
-#' @title Joint Quantile and Expected Shortfall Regression
-#' @description  Estimates a joint linear regression model for the pair (VaR, ES):
+#' Joint Quantile and Expected Shortfall Regression
+#'
+#' Estimates a joint linear regression model for the pair (VaR, ES):
 #' \deqn{Q_\alpha(Y | Xq) = Xq'\beta_q}
 #' \deqn{ES_\alpha(Y | Xe) = Xe'\beta_e}
+#'
 #' @param formula Formula: y ~ x1 + x2 ... | x1 + x2 ...
 #' where the first part after the response variable specifies the quantile equation
 #' and the second the expected shortfall part. If only one set of regressors is
@@ -31,16 +33,20 @@
 #' fit <- esreg(y ~ x, alpha=alpha)
 #'
 #' # Compare the different variance-covariance estimators
-#' cov1 <- vcov(object=fit, sparsity="iid", cond_var="ind")
-#' cov2 <- vcov(object=fit, sparsity="nid", cond_var="scl_N")
-#' cov3 <- vcov(object=fit, sparsity="nid", cond_var="scl_sp")
+#' cov1 <- vcov(object=fit, sparsity="iid", sigma_est="ind")
+#' cov2 <- vcov(object=fit, sparsity="nid", sigma_est="scl_N")
+#' cov3 <- vcov(object=fit, sparsity="nid", sigma_est="scl_sp")
+#' cov4 <- vcov(object=fit, sparsity="nid", sigma_est="OPG")
+#' cov5 <- vcov(object=fit, sparsity="nid", sigma_est="OPG-HAC")
 #'
 #' print("Comparison of the variance-covariance estimators")
-#' print(rbind(Truth=true_pars,
+#' print(cbind(Truth=true_pars,
 #'             Estimate=coef(fit),
 #'             SE_iid_ind=sqrt(diag(cov1)),
 #'             SE_nid_N=sqrt(diag(cov2)),
-#'             SE_nid_sp=sqrt(diag(cov3))))
+#'             SE_nid_sp=sqrt(diag(cov3)),
+#'             SE_nid_OPG=sqrt(diag(cov4)),
+#'             SE_nid_HAC=sqrt(diag(cov5))))
 #'
 #' # Compares estimates using different G2 functions
 #' fit1 <- esreg(y ~ x, alpha=alpha, g2=1)
@@ -84,6 +90,7 @@ esreg.formula <- function(formula, data=parent.frame(), alpha, g1 = 2L, g2 = 1L,
     stop('You must not have more than two formula objects.')
   }
   mf <- stats::model.frame(formula = formula, data = data, na.action = stats::na.pass)
+  terms <- stats::terms(formula)
 
   # Extract the data matrices
   xq <- stats::model.matrix(formula, mf, rhs=1)
@@ -93,6 +100,7 @@ esreg.formula <- function(formula, data=parent.frame(), alpha, g1 = 2L, g2 = 1L,
   # Fit the model
   fit <- esreg.fit(xq, xe, y, alpha, g1, g2, early_stopping)
   fit$call <- match.call()
+  fit$terms <- terms
   fit$formula <- formula
 
   fit
@@ -114,6 +122,25 @@ esreg.default <- function(xq, xe, y, alpha, g1 = 2L, g2 = 1L,
   fit
 }
 
+#' Model Matrix
+#'
+#' Returns a n x (kq + ke) matrix with covariates in order to match \link{estfun.esreg}
+#' and its use in \link[sandwich]{meatHAC}.
+#'
+#' @param object An \link{esreg} object
+#' @param ... Further arguments (does not apply here)
+#' @export
+model.matrix.esreg <- function(object, ...) {
+  chkDots(...)
+  mm1 <- stats::model.matrix(object$formula, rhs=1)
+  mm2 <- stats::model.matrix(object$formula, rhs=2)
+  mm <- cbind(mm1, mm2)
+  attributes(mm)$assign <- c(attr(mm1,  'assign'), attr(mm2,  'assign'))
+
+  mm
+}
+
+
 #' @export
 print.esreg <- function(x, digits = 4, ...) {
   chkDots(...)
@@ -127,6 +154,7 @@ print.esreg <- function(x, digits = 4, ...) {
 
 #' @export
 summary.esreg <- function(object, ...) {
+  chkDots(...)
   xq <- object$xq
   xe <- object$xe
   n <- nrow(xq)
@@ -178,7 +206,8 @@ predict.esreg <- function(object, newdata=NULL, ...) {
   if (is.null(newdata)) {
     yhat <- fitted.esreg(object)
   } else {
-    if (nrow(newdata) == 0) stop('newdata is empty')
+    if (nrow(newdata) == 0)
+      stop('newdata is empty')
     if (is.null(object$formula)) {
       stop('The predict method is only supported using the formula interface')
     } else {
@@ -193,65 +222,30 @@ predict.esreg <- function(object, newdata=NULL, ...) {
   yhat
 }
 
-#' @title Covariance Estimation
-#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
-#' @param object An esreg object
-#' @param method For asymptotic use \link{vcovA}, for boot use \link{vcovB}
-#' @param ... All possible values which can be passed to \link{vcovA} and \link{vcovB}
-#' @export
-vcov.esreg <- function(object, method='asymptotic', ...) {
-  if (method == 'asymptotic') {
-    cov <- vcovA(object, ...)
-  } else if(method == 'boot') {
-    cov <- vcovB(object, ...)
-  } else {
-    stop('method can be asymptotic or boot')
-  }
-  cov
-}
 
-#' @title Asymptotic Covariance Estimation
-#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
-#' using the asymptotic formulas
-#' @param object An esreg object
-#' @param sparsity The sparsity estimator,
-#'   see \link{density_quantile_function} for more details.
-#'   \itemize{
-#'     \item iid - Piecewise linear interpolation of the distribution
-#'     \item nid - Hendricks and Koenker sandwich
-#'   }
-#' @param cond_var The conditional truncated variance estimator,
-#'   see \link{conditional_truncated_variance} for more details.
-#'   \itemize{
-#'     \item ind - Variance over all negative residuals
-#'     \item scl_N - Scaling with the normal distribution
-#'     \item scl_sp - Scaling with the kernel density function
-#'     }
-#' @param bandwidth_type The bandwidth estimator
-#'  \itemize{
-#'    \item Bofinger
-#'    \item Chamberlain
-#'    \item Hall-Sheather
-#'  }
+#' Estimating function
+#'
+#' This function matches the \link[sandwich]{estfun} function of the sandwich package and
+#' returns the estimating functions for the fitted model.
+#' For esreg, the dimension of the estimating functions is n x (kq + ke).
+#'
+#' @param x An \link{esreg} object
+#' @param ... Further arguments (does not apply here)
 #' @export
-vcovA <- function(object, sparsity = 'iid', cond_var = 'ind',
-                  bandwidth_type = 'Hall-Sheather') {
-  if(!(sparsity %in% c("iid", "nid")))
-    stop("sparsity can be iid or nid")
-  if(!(cond_var %in% c("ind", "scl_N", "scl_sp")))
-    stop("cond_var can be ind, scl_N or scl_sp")
-  if(!(bandwidth_type %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
-    stop("bandwidth_type can be Bofinger, Chamberlain or Hall-Sheather")
+estfun.esreg <- function(x, ...) {
+  chkDots(...)
 
-  # Extract some elements
+  # Extract elements from object
+  object <- x
   y <- object$y
   xq <- object$xq
   xe <- object$xe
-  n <- nrow(xq)
-  kq <- ncol(xq)
-  ke <- ncol(xe)
   coefficients_q <- object$coefficients_q
   coefficients_e <- object$coefficients_e
+  alpha <- object$alpha
+  n <- length(y)
+  kq <- ncol(xq)
+  ke <- ncol(xe)
 
   # Transform the data and coefficients
   if (object$g2 %in% c(1, 2, 3)) {
@@ -266,34 +260,87 @@ vcovA <- function(object, sparsity = 'iid', cond_var = 'ind',
   xbe <- as.numeric(xe %*% coefficients_e)
   uq <- as.numeric(y - xbq)
 
-  # Check the methods in case of sample quantile / es
-  if ((kq == 1) & (ke == 1) & sparsity != "iid") {
-    warning("Changed sparsity estimation to iid!")
-    sparsity <- "iid"
-  }
-  if ((kq == 1) & (ke == 1) & cond_var != "ind") {
-    warning("Changed conditional truncated variance estimation to nid!")
-    cond_var <- "ind"
-  }
-
-  # Density quantile function
-  dens <- density_quantile_function(y = y, x = xq, u = uq, alpha = object$alpha,
-                                    sparsity = sparsity, bandwidth_type = bandwidth_type)
-
-  # Truncated conditional variance
-  cv <- conditional_truncated_variance(y = uq, x = xq, approach = cond_var)
-
   # Evaluate G1 / G2 functions
   G1_prime_xq <- G_vec(z = xbq, g = "G1_prime", type = object$g1)
   G2_xe <- G_vec(z = xbe, g = "G2", type = object$g2)
   G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
+  G2_prime_prime_xe <- G_vec(z = xbe, g = "G2_prime_prime", type = object$g2)
 
-  # Compute the covariance matrix
-  cov <- l_esreg_covariance(
-    xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = object$alpha,
+  psi <- estimating_function_loop(
+    y = y, xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = alpha,
     G1_prime_xq = G1_prime_xq,
-    G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
-    density = dens, conditional_variance = cv)
+    G2_xe = G2_xe, G2_prime_xe = G2_prime_xe)
+
+  psi
+}
+
+#' Covariance Estimation
+#'
+#' Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
+#'
+#' @param object An \link{esreg} object
+#' @param method For asymptotic use \link{vcovA}, for boot use \link{vcovB}
+#' @param ... All possible values which can be passed to \link{vcovA} and \link{vcovB}
+#' @export
+vcov.esreg <- function(object, method='asymptotic', ...) {
+  if (method == 'asymptotic') {
+    cov <- vcovA(object, ...)
+  } else if(method == 'boot') {
+    cov <- vcovB(object, ...)
+  } else {
+    stop('method can be asymptotic or boot')
+  }
+  cov
+}
+
+#' Asymptotic Covariance Estimation
+#'
+#' Estimate the variance-covariance matrix of the joint (VaR, ES) estimator by the sandwich formula:
+#' \deqn{\lambda^{-1} \Sigma \lambda^{-1}}
+#' Several estimators are available for both matrices and the default options are selected to take into account
+#' possible misspecifications in the underlying data.
+#'
+#' @param object An esreg object
+#' @param sigma_est The estimator to be used for \eqn{\Sigma} (the meat in the sandwich)
+#'   \itemize{
+#'     \item ind - Variance over all negative residuals (see \link{conditional_truncated_variance})
+#'     \item scl_N - Scaling with the normal distribution (see \link{conditional_truncated_variance})
+#'     \item scl_sp - Scaling with the kernel density function (see \link{conditional_truncated_variance})
+#'     \item OPG - outer product of the estimating functions (see \link[sandwich]{meat})
+#'     \item OPG-HAC - HAC version of the outer product of the estimating functions (see \link[sandwich]{meatHAC})
+#'     }
+#' @param sparsity The estimator to be used for the sparsity in \eqn{\Lambda} (the bread in the sandwich), see \link{density_quantile_function}
+#'   \itemize{
+#'     \item iid - Piecewise linear interpolation of the distribution
+#'     \item nid - Hendricks and Koenker sandwich
+#'     \item indicator - TBA
+#'   }
+#' @param bandwidth_estimator The bandwidth estimator to be used for the iid and nid sparsity estimator, see \link{density_quantile_function}
+#'  \itemize{
+#'    \item Bofinger
+#'    \item Chamberlain
+#'    \item Hall-Sheather
+#'  }
+#' @param misspec if TRUE, the estimator accounts for potential misspecification in the model, see TBA
+#' @export
+vcovA <- function(object, sigma_est = 'OPG-HAC', sparsity = 'nid', misspec = TRUE, bandwidth_estimator = 'Hall-Sheather') {
+
+  bread <- function(object) {
+    sandwich::bread(object, sparsity = sparsity, bandwidth_estimator = bandwidth_estimator, misspec = misspec)
+  }
+
+  if (sigma_est == 'OPG') {
+    meat <- function(x) sandwich::meat(x)
+  } else if (sigma_est == 'OPG-HAC') {
+    meat <- function(x) sandwich::meatHAC(x)
+  } else if (sigma_est %in% c('ind', 'scl_N', 'scl_sp')) {
+    meat <- function(x) sigma_matrix(object, sigma_est = 'scl_sp')
+  } else {
+    stop('This meat estimator is not supported!')
+  }
+
+  cov <- sandwich::sandwich(object, bread. = bread, meat. = meat)
+
   rownames(cov) <- colnames(cov) <- names(stats::coef(object))
   cov
 }
@@ -328,62 +375,6 @@ vcovB <-function(object, bootstrap_method='iid', B=1000) {
 
   # Compute the covariance
   cov <- cov(t(b))
-  rownames(cov) <- colnames(cov) <- names(stats::coef(object))
-  cov
-}
-
-#' @title Covariance Estimation under Misspecification
-#' @description Estimate the variance-covariance matrix of the joint (VaR, ES) estimator
-#' using TODO.
-#' @param object An esreg object
-#' @export
-vcovMS <-function(object, sparsity = 'nid', bandwidth_type = 'Hall-Sheather', cond_var='nid') {
-  # Extract some elements
-  y <- object$y
-  xq <- object$xq
-  xe <- object$xe
-  n <- nrow(xq)
-  kq <- ncol(xq)
-  ke <- ncol(xe)
-  coefficients_q <- object$coefficients_q
-  coefficients_e <- object$coefficients_e
-
-  # Transform the data and coefficients
-  if (object$g2 %in% c(1, 2, 3)) {
-    max_y <- max(y)
-    y <- y - max_y
-    coefficients_q[1] <- coefficients_q[1] - max_y
-    coefficients_e[1] <- coefficients_e[1] - max_y
-  }
-
-  # Precompute some quantities
-  xbq <- as.numeric(xq %*% coefficients_q)
-  xbe <- as.numeric(xe %*% coefficients_e)
-  uq <- as.numeric(y - xbq)
-
-  # Density quantile function
-  dens <- density_quantile_function(y = y, x = xq, u = uq, alpha = object$alpha,
-                                    sparsity = sparsity, bandwidth_type = bandwidth_type)
-
-  # Truncated conditional variance
-  cv <- conditional_truncated_variance(y = uq, x = xq, approach = cond_var)
-
-  # Evaluate G1 / G2 functions
-  G1_prime_xq <- G_vec(z = xbq, g = "G1_prime", type = object$g1)
-  G2_xe <- G_vec(z = xbe, g = "G2", type = object$g2)
-  G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
-
-  # Compute the covariance matrix
-  sigma <- sigma_matrix_old_version(
-    xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = object$alpha,
-    G1_prime_xq = G1_prime_xq,
-    G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
-    density = dens, conditional_variance = cv)
-
-  # sigma <- esreg:::sigma_matrix(object)
-  lambda <- lambda_matrix(object, dens)
-  lambda_inv <- chol2inv(chol(lambda))
-  cov <- lambda_inv %*% sigma %*% lambda_inv / length(object$y)
   rownames(cov) <- colnames(cov) <- names(stats::coef(object))
   cov
 }
@@ -501,3 +492,148 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
 
   revtal
 }
+
+#' Bread in the sandwich
+#'
+#' The bread in the sandwich, i.e. the inverse of \eqn{\Lambda}, for more details see \link{lambda_matrix}.
+#' This function is added for compatibility with the sandwich package.
+#'
+#' @param x An \link{esreg} object
+#' @param ... Further arguments (does not apply here)
+#' @inheritParams vcovA
+#' @import sandwich
+#' @export
+bread.esreg <- function(x, sparsity = 'nid', bandwidth_estimator = 'Hall-Sheather', misspec = TRUE, ...) {
+  chkDots(...)
+  lambda <- lambda_matrix(x, sparsity = sparsity, bandwidth_estimator = bandwidth_estimator, misspec = misspec)
+  bread <- chol2inv(chol(lambda))
+
+  bread
+}
+
+#' Lambda Matrix
+#'
+#' Estimate the lambda matrix (inverse of the bread in the sandwich).
+#'
+#' @inheritParams vcovA
+#' @export
+lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
+  if(!(sparsity %in% c("iid", "nid", "indicator")))
+    stop("sparsity can be iid, nid or indicator")
+  if(!(bandwidth_estimator %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
+    stop("bandwidth_estimator can be Bofinger, Chamberlain or Hall-Sheather")
+
+  # Extract elements from object
+  y <- object$y
+  xq <- object$xq
+  xe <- object$xe
+  coefficients_q <- object$coefficients_q
+  coefficients_e <- object$coefficients_e
+  alpha <- object$alpha
+  n <- length(y)
+  kq <- ncol(xq)
+  ke <- ncol(xe)
+
+  # Transform the data and coefficients
+  if (object$g2 %in% c(1, 2, 3)) {
+    max_y <- max(y)
+    y <- y - max_y
+    coefficients_q[1] <- coefficients_q[1] - max_y
+    coefficients_e[1] <- coefficients_e[1] - max_y
+  }
+
+  # Precompute some quantities
+  xbq <- as.numeric(xq %*% coefficients_q)
+  xbe <- as.numeric(xe %*% coefficients_e)
+  uq <- as.numeric(y - xbq)
+
+  # Evaluate G1 / G2 functions
+  G1_prime_xq <- G_vec(z = xbq, g = "G1_prime", type = object$g1)
+  G2_xe <- G_vec(z = xbe, g = "G2", type = object$g2)
+  G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
+  G2_prime_prime_xe <- G_vec(z = xbe, g = "G2_prime_prime", type = object$g2)
+
+  # # Check the methods in case of sample quantile / es
+  # if ((kq == 1) & (ke == 1) & sparsity != "iid") {
+  #   warning("Changed sparsity estimation to iid!")
+  #   sparsity <- "iid"
+  # }
+
+  # Density quantile function
+  if (sparsity %in% c('iid', 'nid')) {
+    dens <- density_quantile_function(
+      y = y, x = xq, u = uq, alpha = object$alpha,
+      sparsity = sparsity, bandwidth_estimator = bandwidth_estimator
+    )
+  } else if (sparsity == 'indicator') {
+    ct <- n^(-1/3)
+    dens <- (abs(uq) <= ct) / (2*ct)
+  }
+
+  # Compute lambda
+  lambda <- lambda_matrix_loop(
+    xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = alpha,
+    G1_prime_xq = G1_prime_xq,
+    G2_xe = G2_xe, G2_prime_xe = G2_prime_xe, G2_prime_prime_xe = G2_prime_prime_xe,
+    density = dens, include_misspecification_terms = misspec)
+
+  lambda
+}
+
+#' Sigma Matrix ("meat")
+#'
+#' Estimate the sigma matrix (the meat in the sandwich).
+#'
+#' @inheritParams vcovA
+#' @export
+sigma_matrix <- function(object, sigma_est) {
+  if(!(sigma_est %in% c("ind", "scl_N", "scl_sp")))
+    stop("sigma_estimator can be ind, scl_N or scl_sp")
+
+  # Extract elements from object
+  y <- object$y
+  xq <- object$xq
+  xe <- object$xe
+  coefficients_q <- object$coefficients_q
+  coefficients_e <- object$coefficients_e
+  alpha <- object$alpha
+  n <- length(y)
+  kq <- ncol(xq)
+  ke <- ncol(xe)
+
+  # Transform the data and coefficients
+  if (object$g2 %in% c(1, 2, 3)) {
+    max_y <- max(y)
+    y <- y - max_y
+    coefficients_q[1] <- coefficients_q[1] - max_y
+    coefficients_e[1] <- coefficients_e[1] - max_y
+  }
+
+  # Precompute some quantities
+  xbq <- as.numeric(xq %*% coefficients_q)
+  xbe <- as.numeric(xe %*% coefficients_e)
+  uq <- as.numeric(y - xbq)
+
+  # Evaluate G1 / G2 functions
+  G1_prime_xq <- G_vec(z = xbq, g = "G1_prime", type = object$g1)
+  G2_xe <- G_vec(z = xbe, g = "G2", type = object$g2)
+  G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
+  G2_prime_prime_xe <- G_vec(z = xbe, g = "G2_prime_prime", type = object$g2)
+
+  # # Check the methods in case of sample quantile / es
+  # if ((kq == 1) & (ke == 1) & sigma_est != "ind") {
+  #   warning("Changed conditional truncated variance estimation to ind!")
+  #   estimator <- "ind"
+  # }
+
+  # Compute sigma
+  cv <- conditional_truncated_variance(y = uq, x = xq, approach = sigma_est)
+  sigma <- sigma_matrix_calculcated(
+    xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = alpha,
+    G1_prime_xq = G1_prime_xq,
+    G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
+    conditional_variance = cv)
+
+  sigma
+}
+

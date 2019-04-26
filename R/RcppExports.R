@@ -7,13 +7,18 @@ l_esreg_covariance <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe
 }
 
 #' @keywords internal
-sigma_matrix_old_version <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha) {
-    .Call('_esreg_sigma_matrix_old_version', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
+lambda_matrix_loop <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, include_misspecification_terms, alpha) {
+    .Call('_esreg_lambda_matrix_loop', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, include_misspecification_terms, alpha)
 }
 
 #' @keywords internal
-test_lambda <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha) {
-    .Call('_esreg_test_lambda', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, density, conditional_variance, alpha)
+sigma_matrix_calculcated <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, alpha) {
+    .Call('_esreg_sigma_matrix_calculcated', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, alpha)
+}
+
+#' @keywords internal
+estimating_function_loop <- function(y, xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, alpha) {
+    .Call('_esreg_estimating_function_loop', PACKAGE = 'esreg', y, xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, alpha)
 }
 
 #' @title Specification Function
@@ -95,6 +100,23 @@ G2_prime_fun <- function(z, type) {
     .Call('_esreg_G2_prime_fun', PACKAGE = 'esreg', z, type)
 }
 
+#' @title Specification Function
+#' @description G2_prime_prime
+#' @param z Data
+#' @param type Choice of the G2_prime_prime function:
+#' \itemize{
+#'   \item 1: -2/z^3, z < 0
+#'   \item 2: 0.375 / (-z)^(5/2), z < 0
+#'   \item 3: 6/z^4, z < 0
+#'   \item 4: -(exp(z) * (exp(z) - 1)) / (exp(z) + 1)^3
+#'   \item 5: exp(z)
+#' }
+#' @keywords internal
+#' @export
+G2_prime_prime <- function(z, type) {
+    .Call('_esreg_G2_prime_prime', PACKAGE = 'esreg', z, type)
+}
+
 #' @title Vectorized call to the G1 / G2 functions
 #' @description Vectorized call to the G1 / G2 functions
 #' @param z Vector
@@ -122,15 +144,5 @@ G_vec <- function(z, g, type) {
 #' @export
 esr_rho_lp <- function(b, y, xq, xe, alpha, g1 = 2L, g2 = 1L) {
     .Call('_esreg_esr_rho_lp', PACKAGE = 'esreg', b, y, xq, xe, alpha, g1, g2)
-}
-
-#' @keywords internal
-sigma_matrix <- function(object) {
-    .Call('_esreg_sigma_matrix', PACKAGE = 'esreg', object)
-}
-
-#' @keywords internal
-lambda_matrix <- function(object, density) {
-    .Call('_esreg_lambda_matrix', PACKAGE = 'esreg', object, density)
 }
 

@@ -1,3 +1,6 @@
+# 0.4.1
+* Add new covariance estimator
+
 # 0.4.0
 * Allow different covariates in the quantile and the expected shortfall regression
 * Restructure the package using the recommendations provided here: http://www.milbo.org/doc/modguide.pdf

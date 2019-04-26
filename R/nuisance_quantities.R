@@ -5,24 +5,24 @@
 #' @param u Quantile residuals
 #' @param alpha Probability level
 #' @param sparsity iid or ind
-#' @param bandwidth_type Bofinger, Chamberlain or Hall-Sheather
+#' @param bandwidth_estimator Bofinger, Chamberlain or Hall-Sheather
 #' @references
 #' For the iid and nid method, see Koenker (1994), and Hendricks and Koenker (1992).
 #' For the bandwidth types, see Bofinger (1975), Chamberlain (1994), and Hall and Sheather(1988).
 #' @keywords internal
 #' @export
-density_quantile_function <- function(y, x, u, alpha, sparsity, bandwidth_type) {
+density_quantile_function <- function(y, x, u, alpha, sparsity, bandwidth_estimator) {
   n <- nrow(x)
   k <- ncol(x)
   eps <- .Machine$double.eps^(2/3)
 
   # Get the bandwidth
-  if (bandwidth_type == "Bofinger") {
+  if (bandwidth_estimator == "Bofinger") {
     bandwidth <- n^(-1/5) * ((9/2 * stats::dnorm(stats::qnorm(alpha))^4)/(2 * stats::qnorm(alpha)^2 + 1)^2)^(1/5)
-  } else if (bandwidth_type == "Chamberlain") {
+  } else if (bandwidth_estimator == "Chamberlain") {
     tau <- 0.05
     bandwidth <- stats::qnorm(1 - alpha/2) * sqrt(tau * (1 - tau)/n)
-  } else if (bandwidth_type == "Hall-Sheather") {
+  } else if (bandwidth_estimator == "Hall-Sheather") {
     tau <- 0.05
     bandwidth <- n^(-1/3) * stats::qnorm(1 - tau/2)^(2/3) * ((3/2 * stats::dnorm(stats::qnorm(alpha))^2)/(2 * stats::qnorm(alpha)^2 + 1))^(1/3)
   } else {

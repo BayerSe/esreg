@@ -164,6 +164,46 @@ double G2_prime_fun(double z, int type) {
   return out;
 }
 
+
+//' @title Specification Function
+//' @description G2_prime_prime
+//' @param z Data
+//' @param type Choice of the G2_prime_prime function:
+//' \itemize{
+//'   \item 1: -2/z^3, z < 0
+//'   \item 2: 0.375 / (-z)^(5/2), z < 0
+//'   \item 3: 6/z^4, z < 0
+//'   \item 4: -(exp(z) * (exp(z) - 1)) / (exp(z) + 1)^3
+//'   \item 5: exp(z)
+//' }
+//' @keywords internal
+//' @export
+// [[Rcpp::export]]
+double G2_prime_prime(double z, int type) {
+  double out;
+  if ((type == 1) | (type == 2) | (type == 3)) {
+    if (z >= 0) {
+      Rcpp::warning("z can not be positive for type 1, 2, 3!");
+      return NA_REAL;
+    }
+  }
+  if (type == 1) {
+    out = -1/pow(z, 3);
+  } else if (type == 2) {
+    out = 0.375/pow(-z, 2.5);
+  } else if (type == 3) {
+    out = 6/pow(z, 4);
+  } else if (type == 4) {
+    out =  -(exp(z) * (exp(z) - 1)) / pow(1 + exp(z), 3);
+  } else if (type == 5) {
+    out = exp(z);
+  } else {
+    Rcpp::stop("type not in 1, 2, 3, 4, 5!");
+  }
+  return out;
+}
+
+
 //' @title Vectorized call to the G1 / G2 functions
 //' @description Vectorized call to the G1 / G2 functions
 //' @param z Vector
@@ -186,6 +226,8 @@ Rcpp::NumericVector G_vec(Rcpp::NumericVector z, Rcpp::String g, int type) {
     for (int i = 0; i < n; i++) out[i] = G2_fun(z[i], type);
   } else if (g == "G2_prime") {
     for (int i = 0; i < n; i++) out[i] = G2_prime_fun(z[i], type);
+  } else if (g == "G2_prime_prime") {
+    for (int i = 0; i < n; i++) out[i] = G2_prime_prime(z[i], type);
   } else {
     Rcpp::stop("Non supported G-function!");
   }
@@ -244,135 +286,4 @@ double esr_rho_lp(const arma::colvec& b, const arma::colvec& y,
   }
 
   return out / n;
-}
-
-
-//' @keywords internal
-// [[Rcpp::export]]
-arma::mat sigma_matrix(const Rcpp::List & object) {
-  // Extract quantities from list input
-  arma::vec bq = Rcpp::as<arma::vec>(object["coefficients_q"]);
-  arma::vec be = Rcpp::as<arma::vec>(object["coefficients_e"]);
-
-  arma::vec y = Rcpp::as<arma::vec>(object["y"]);
-  arma::mat xq = Rcpp::as<arma::mat>(object["xq"]);
-  arma::mat xe = Rcpp::as<arma::mat>(object["xe"]);
-
-  double alpha = Rcpp::as<double>(object["alpha"]);
-  int g1 = Rcpp::as<double>(object["g1"]);
-  int g2 = Rcpp::as<double>(object["g2"]);
-
-  // Extract dimensions
-  int n = y.n_elem;
-  int kq = xq.n_cols;
-  int ke = xe.n_cols;
-
-  // Initialize variables
-  double yi, xbq, xbe, h;
-  arma::mat xqi, xei;
-  arma::mat psi = arma::zeros<arma::mat>(n, kq + ke);
-
-  // Transform input variables
-  if (((g2 == 1) | (g2 == 2) | (g2 == 3))) {
-    double max_y = max(y);
-    y -= max_y;
-    bq(0) -= max_y;
-    be(0) -= max_y;
-  }
-
-  // Loop over the observations
-  for (int i = 0; i < n; i++) {
-    yi = y(i);
-    xqi = xq.row(i);
-    xei = xe.row(i);
-    xbq = as_scalar(xqi * bq);
-    xbe = as_scalar(xei * be);
-
-    // Check the shortfall
-    if (((g2 == 1) | (g2 == 2) | (g2 == 3)) & (xbe >= 0)) {
-      Rcpp::warning("x'b_e can not be positive for g2 1, 2, 3!");
-      return arma::mat(n, kq+ke).fill(NA_REAL);
-    }
-
-    // Hit variable
-    h = yi <= xbq;
-
-    // Fill the matrix
-    psi.submat(i, 0, i, kq-1) = xqi * (G1_prime_fun(xbq, g1) + G2_fun(xbe, g2)/alpha) * (h - alpha);
-    psi.submat(i, kq, i, kq+ke-1) = xei *  G2_prime_fun(xbe, g2) * (xbe - xbq + (xbq - yi) * h / alpha);
-  }
-
-  // Compute the crossproduct
-  arma::mat sigma = psi.t() * psi / n;
-
-  return sigma;
-}
-
-
-//' @keywords internal
-// [[Rcpp::export]]
-arma::mat lambda_matrix(const Rcpp::List & object, arma:: vec density) {
-  // Extract quantities from list input
-  arma::vec bq = Rcpp::as<arma::vec>(object["coefficients_q"]);
-  arma::vec be = Rcpp::as<arma::vec>(object["coefficients_e"]);
-
-  arma::vec y = Rcpp::as<arma::vec>(object["y"]);
-  arma::mat xq = Rcpp::as<arma::mat>(object["xq"]);
-  arma::mat xe = Rcpp::as<arma::mat>(object["xe"]);
-
-  double alpha = Rcpp::as<double>(object["alpha"]);
-  int g1 = Rcpp::as<double>(object["g1"]);
-  int g2 = Rcpp::as<double>(object["g2"]);
-
-  // Extract dimensions
-  int n = y.n_elem;
-  int kq = xq.n_cols;
-  int ke = xe.n_cols;
-
-  // Define some 0-matrices
-  arma::mat lambda_11 = arma::zeros<arma::mat>(kq, kq);
-  arma::mat lambda_12 = arma::zeros<arma::mat>(kq, ke);
-  arma::mat lambda_22 = arma::zeros<arma::mat>(ke, ke);
-
-  arma::mat lambda = arma::zeros<arma::mat>(kq+ke, kq+ke);
-
-  arma::mat xqi, xei, xxq, xxe, xxqe;
-  double yi, xbqi, xbei, hit;
-
-  // Transform input variables
-  if (((g2 == 1) | (g2 == 2) | (g2 == 3))) {
-    double max_y = max(y);
-    y -= max_y;
-    bq(0) -= max_y;
-    be(0) -= max_y;
-  }
-
-  // Compute the matrix elements
-  for (int i = 0; i < n; i++) {
-    yi = y(i);
-
-    xqi = xq.row(i);
-    xei = xe.row(i);
-
-    xxq = xqi.t() * xqi;
-    xxe = xei.t() * xei;
-    xxqe = xqi.t() * xei;
-
-    xbqi = as_scalar(xqi * bq);
-    xbei = as_scalar(xei * be);
-
-    hit = yi <= xbqi;
-
-    lambda_11 += -1/alpha * xxq / xbei * density(i);
-    lambda_12 += xxqe / pow(xbei, 2) * (hit - alpha);
-    lambda_22 += xxe / pow(xbei, 2) - 2 * xxe / pow(xbei, 3) * (xbei - yi/alpha*hit + xbqi * (hit-alpha)/alpha);
-  }
-
-  // Fill the matrices
-  lambda.submat(0, 0, kq-1, kq-1) = lambda_11 / n;
-  lambda.submat(0, kq, kq-1, kq+ke-1) = lambda_12 / n;
-  lambda.submat(kq, 0, kq+ke-1, kq-1) = lambda_12.t() / n;
-  lambda.submat(kq, kq, kq+ke-1, kq+ke-1) = lambda_22 / n;
-
-  return lambda;
 }
