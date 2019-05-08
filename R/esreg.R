@@ -102,6 +102,7 @@ esreg.formula <- function(formula, data=parent.frame(), alpha, g1 = 2L, g2 = 1L,
   fit$call <- match.call()
   fit$terms <- terms
   fit$formula <- formula
+  fit$data <- data
 
   fit
 }
@@ -132,8 +133,8 @@ esreg.default <- function(xq, xe, y, alpha, g1 = 2L, g2 = 1L,
 #' @export
 model.matrix.esreg <- function(object, ...) {
   chkDots(...)
-  mm1 <- stats::model.matrix(object$formula, rhs=1)
-  mm2 <- stats::model.matrix(object$formula, rhs=2)
+  mm1 <- stats::model.matrix(object$formula, rhs=1, data=object$data)
+  mm2 <- stats::model.matrix(object$formula, rhs=2, data=object$data)
   mm <- cbind(mm1, mm2)
   attributes(mm)$assign <- c(attr(mm1,  'assign'), attr(mm2,  'assign'))
 
@@ -334,7 +335,7 @@ vcovA <- function(object, sigma_est = 'OPG-HAC', sparsity = 'nid', misspec = TRU
   } else if (sigma_est == 'OPG-HAC') {
     meat <- function(x) sandwich::meatHAC(x)
   } else if (sigma_est %in% c('ind', 'scl_N', 'scl_sp')) {
-    meat <- function(x) sigma_matrix(object, sigma_est = 'scl_sp')
+    meat <- function(x) sigma_matrix_scaling(x, sigma_est = sigma_est)
   } else {
     stop('This meat estimator is not supported!')
   }
@@ -511,6 +512,26 @@ bread.esreg <- function(x, sparsity = 'nid', bandwidth_estimator = 'Hall-Sheathe
   bread
 }
 
+
+#' Sigma Matrix ("meat")
+#'
+#' Estimate the sigma matrix (the meat in the sandwich).
+#'
+#' @inheritParams vcovA
+#' @export
+sigma_matrix <- function(object, sigma_est = 'OPG-HAC') {
+  if (sigma_est == 'OPG') {
+    meat <- sandwich::meat(object)
+  } else if (sigma_est == 'OPG-HAC') {
+    meat <- sandwich::meatHAC(object)
+  } else if (sigma_est %in% c('ind', 'scl_N', 'scl_sp')) {
+    meat <- sigma_matrix_scaling(object, sigma_est = sigma_est)
+  } else {
+    stop('This meat estimator is not supported!')
+  }
+  meat
+}
+
 #' Lambda Matrix
 #'
 #' Estimate the lambda matrix (inverse of the bread in the sandwich).
@@ -549,6 +570,7 @@ lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
 
   # Evaluate G1 / G2 functions
   G1_prime_xq <- G_vec(z = xbq, g = "G1_prime", type = object$g1)
+  G1_prime_prime_xq <- G_vec(z = xbq, g = "G1_prime_prime", type = object$g1)
   G2_xe <- G_vec(z = xbe, g = "G2", type = object$g2)
   G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
   G2_prime_prime_xe <- G_vec(z = xbe, g = "G2_prime_prime", type = object$g2)
@@ -573,20 +595,16 @@ lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
   # Compute lambda
   lambda <- lambda_matrix_loop(
     xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = alpha,
-    G1_prime_xq = G1_prime_xq,
+    G1_prime_xq = G1_prime_xq, G1_prime_prime_xq = G1_prime_prime_xq,
     G2_xe = G2_xe, G2_prime_xe = G2_prime_xe, G2_prime_prime_xe = G2_prime_prime_xe,
     density = dens, include_misspecification_terms = misspec)
 
   lambda
 }
 
-#' Sigma Matrix ("meat")
-#'
-#' Estimate the sigma matrix (the meat in the sandwich).
-#'
-#' @inheritParams vcovA
-#' @export
-sigma_matrix <- function(object, sigma_est) {
+#' Estimate the sigma matrix (the meat in the sandwich) using the scaling estimator.
+#' @keywords internal
+sigma_matrix_scaling <- function(object, sigma_est) {
   if(!(sigma_est %in% c("ind", "scl_N", "scl_sp")))
     stop("sigma_estimator can be ind, scl_N or scl_sp")
 

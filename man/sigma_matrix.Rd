@@ -4,7 +4,7 @@
 \alias{sigma_matrix}
 \title{Sigma Matrix ("meat")}
 \usage{
-sigma_matrix(object, sigma_est)
+sigma_matrix(object, sigma_est = "OPG-HAC")
 }
 \arguments{
 \item{object}{An esreg object}

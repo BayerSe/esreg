@@ -7,8 +7,8 @@ l_esreg_covariance <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe
 }
 
 #' @keywords internal
-lambda_matrix_loop <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, include_misspecification_terms, alpha) {
-    .Call('_esreg_lambda_matrix_loop', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, include_misspecification_terms, alpha)
+lambda_matrix_loop <- function(xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, include_misspecification_terms, alpha) {
+    .Call('_esreg_lambda_matrix_loop', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, include_misspecification_terms, alpha)
 }
 
 #' @keywords internal
@@ -47,6 +47,20 @@ G1_fun <- function(z, type) {
 #' @export
 G1_prime_fun <- function(z, type) {
     .Call('_esreg_G1_prime_fun', PACKAGE = 'esreg', z, type)
+}
+
+#' @title Specification Function
+#' @description G1_prime_prime
+#' @param z Data
+#' @param type Choice of the G1_prime_prime function:
+#' \itemize{
+#'   \item 1: G1_prime(z) = 0
+#'   \item 2: G1_prime(z) = 0
+#' }
+#' @keywords internal
+#' @export
+G1_prime_prime_fun <- function(z, type) {
+    .Call('_esreg_G1_prime_prime_fun', PACKAGE = 'esreg', z, type)
 }
 
 #' @title Specification Function

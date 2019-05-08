@@ -49,6 +49,30 @@ double G1_prime_fun(double z, int type) {
 
 
 //' @title Specification Function
+//' @description G1_prime_prime
+//' @param z Data
+//' @param type Choice of the G1_prime_prime function:
+//' \itemize{
+//'   \item 1: G1_prime(z) = 0
+//'   \item 2: G1_prime(z) = 0
+//' }
+//' @keywords internal
+//' @export
+// [[Rcpp::export]]
+double G1_prime_prime_fun(double z, int type) {
+  double out;
+  if (type == 1) {
+    out = 0;
+  } else if (type == 2) {
+    out = 0;
+  } else {
+    Rcpp::stop("type not in 1, 2!");
+  }
+  return out;
+}
+
+
+//' @title Specification Function
 //' @description G2_curly
 //' @param z Data
 //' @param type Choice of the G2_curly function:
@@ -220,6 +244,8 @@ Rcpp::NumericVector G_vec(Rcpp::NumericVector z, Rcpp::String g, int type) {
     for (int i = 0; i < n; i++) out[i] = G1_fun(z[i], type);
   } else if (g == "G1_prime") {
     for (int i = 0; i < n; i++) out[i] = G1_prime_fun(z[i], type);
+  } else if (g == "G1_prime_prime") {
+    for (int i = 0; i < n; i++) out[i] = G1_prime_prime_fun(z[i], type);
   } else if (g == "G2_curly") {
     for (int i = 0; i < n; i++) out[i] = G2_curly_fun(z[i], type);
   } else if (g == "G2") {
