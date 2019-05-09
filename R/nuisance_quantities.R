@@ -73,33 +73,10 @@ conditional_truncated_variance <- function(y, x, approach) {
     cv <- rep(stats::var(y[y <= 0]), length(y))
   } else {
     cv <- tryCatch({
-      # Starting values and ensure positive fitted standard deviations
-      fit1 <- stats::lm(y ~ x - 1)
-      fit2 <- stats::lm(abs(fit1$residuals) ~ x - 1)
-      fit2$coefficients[1] <- fit2$coefficients[1] - min(0.001, min(fit2$fitted.values))
-      b0 <- c(fit1$coefficients, fit2$coefficients)
-
-      # Estimate the model under normality
-      ll <- function(par, y, x) {
-        k <- ncol(x)
-        mu <- as.numeric(x %*% par[1:k])
-        sigma <- as.numeric(x %*% par[(k+1):(2*k)])
-        ifelse(all(sigma > 0), -sum(stats::dnorm(x=y, mean=mu, sd=sigma, log=TRUE)), NA)
-      }
-      fit <- try(stats::optim(b0, function(b) ll(par=b, y=y, x=x), method="BFGS"), silent=TRUE)
-      if(inherits(fit, "try-error") || (fit$convergence != 0)) {
-        fit <- try(stats::optim(b0, function(b) ll(par=b, y=y, x=x), method="Nelder-Mead",
-                                control=list(maxit=10000)), silent=TRUE)
-      }
-      if(inherits(fit, "try-error") || (fit$convergence != 0)) {
-        stop("Cannot fit the model!")
-      }
-      b <- fit$par
-
-      # Estimated means and standard deviations
-      k <- ncol(x)
-      mu <- as.numeric(x %*% b[1:k])
-      sigma <- as.numeric(x %*% b[(k+1):(2*k)])
+      # Get conditional mean and sigma
+      mu_sigma <- conditional_mean_sigma(y, x)
+      mu <- mu_sigma$mu
+      sigma <- mu_sigma$sigma
 
       # Truncated conditional variance
       if (approach == "scl_N") {
@@ -141,4 +118,52 @@ conditional_truncated_variance <- function(y, x, approach) {
   }
 
   cv
+}
+
+#' @export
+cdf_at_quantile <- function(y, x, q) {
+  # Get conditional mean and sigma
+  mu_sigma <- conditional_mean_sigma(y, x)
+  mu <- mu_sigma$mu
+  sigma <- mu_sigma$sigma
+
+  # Empirical CDF of standardized data
+  cdf <- function(x) ecdf((y - mu) / sigma)(x)
+
+  # CDF of standardized quantile predictions
+  z <- (q - mu) / sigma
+  cdf(z)
+}
+
+#' @export
+conditional_mean_sigma <- function(y, x) {
+  # Starting values and ensure positive fitted standard deviations
+  fit1 <- stats::lm(y ~ x - 1)
+  fit2 <- stats::lm(abs(fit1$residuals) ~ x - 1)
+  fit2$coefficients[1] <- fit2$coefficients[1] - min(0.001, min(fit2$fitted.values))
+  b0 <- c(fit1$coefficients, fit2$coefficients)
+
+  # Estimate the model under normality
+  ll <- function(par, y, x) {
+    k <- ncol(x)
+    mu <- as.numeric(x %*% par[1:k])
+    sigma <- as.numeric(x %*% par[(k+1):(2*k)])
+    ifelse(all(sigma > 0), -sum(stats::dnorm(x=y, mean=mu, sd=sigma, log=TRUE)), NA)
+  }
+  fit <- try(stats::optim(b0, function(b) ll(par=b, y=y, x=x), method="BFGS"), silent=TRUE)
+  if(inherits(fit, "try-error") || (fit$convergence != 0)) {
+    fit <- try(stats::optim(b0, function(b) ll(par=b, y=y, x=x), method="Nelder-Mead",
+                            control=list(maxit=10000)), silent=TRUE)
+  }
+  if(inherits(fit, "try-error") || (fit$convergence != 0)) {
+    stop("Cannot fit the model!")
+  }
+  b <- fit$par
+
+  # Estimated means and standard deviations
+  k <- ncol(x)
+  mu <- as.numeric(x %*% b[1:k])
+  sigma <- as.numeric(x %*% b[(k+1):(2*k)])
+
+  list(mu = mu, sigma = sigma)
 }

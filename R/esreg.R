@@ -586,12 +586,15 @@ lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
     sparsity = sparsity, bandwidth_estimator = bandwidth_estimator
   )
 
+  # Conditional CDF evaluated at conditional quantile
+  cdf <- cdf_at_quantile(y = y, x = xq, q = xbq)
+
   # Compute lambda
   lambda <- lambda_matrix_loop(
     xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = alpha,
     G1_prime_xq = G1_prime_xq, G1_prime_prime_xq = G1_prime_prime_xq,
     G2_xe = G2_xe, G2_prime_xe = G2_prime_xe, G2_prime_prime_xe = G2_prime_prime_xe,
-    density = dens, include_misspecification_terms = misspec)
+    density = dens, cdf = cdf, include_misspecification_terms = misspec)
 
   lambda
 }

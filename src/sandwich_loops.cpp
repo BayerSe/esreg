@@ -7,7 +7,8 @@ arma::mat lambda_matrix_loop(
     arma::mat xq, arma::mat xe, arma::vec xbq, arma::vec xbe,
     arma::vec G1_prime_xq, arma::vec G1_prime_prime_xq,
     arma::vec G2_xe, arma::vec G2_prime_xe, arma::vec G2_prime_prime_xe,
-    arma::vec density, bool include_misspecification_terms, double alpha) {
+    arma::vec density, arma::vec cdf,
+    bool include_misspecification_terms, double alpha) {
   int n = xq.n_rows;
   int kq = xq.n_cols;
   int ke = xe.n_cols;
@@ -18,7 +19,7 @@ arma::mat lambda_matrix_loop(
   arma::mat lambda_22 = arma::zeros<arma::mat>(ke, ke);
   arma::mat lambda = arma::zeros<arma::mat>(kq+ke, kq+ke);
   arma::mat xqi, xei, xxq, xxe, xxqe;
-  double yi, xbqi, xbei, hit, cdf;
+  double yi, xbqi, xbei, hit, cdfi;
 
   // Compute the matrix elements
   for (int i = 0; i < n; i++) {
@@ -30,11 +31,11 @@ arma::mat lambda_matrix_loop(
     xbqi = xbq(i);
     xbei = xbe(i);
     hit = yi <= xbqi;
+    cdfi = cdf(i);
 
     if (include_misspecification_terms) {
-      cdf = hit;
-      lambda_11 += xxq * (G1_prime_xq(i) + G2_xe(i) / alpha) * density(i) + xxq * G1_prime_prime_xq(i) * (cdf - alpha);
-      lambda_12 += xxqe * G2_prime_xe(i) * (cdf - alpha) / alpha;
+      lambda_11 += xxq * (G1_prime_xq(i) + G2_xe(i) / alpha) * density(i) + xxq * G1_prime_prime_xq(i) * (cdfi - alpha);
+      lambda_12 += xxqe * G2_prime_xe(i) * (cdfi - alpha) / alpha;
       lambda_22 += xxe * G2_prime_xe(i) + xxe * G2_prime_prime_xe(i) *(xbei - yi * hit / alpha + xbqi * (hit - alpha) / alpha);
     } else {
       lambda_11 += xxq * (G1_prime_xq(i) + G2_xe(i) / alpha) * density(i);

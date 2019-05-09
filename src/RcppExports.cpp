@@ -27,8 +27,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // lambda_matrix_loop
-arma::mat lambda_matrix_loop(arma::mat xq, arma::mat xe, arma::vec xbq, arma::vec xbe, arma::vec G1_prime_xq, arma::vec G1_prime_prime_xq, arma::vec G2_xe, arma::vec G2_prime_xe, arma::vec G2_prime_prime_xe, arma::vec density, bool include_misspecification_terms, double alpha);
-RcppExport SEXP _esreg_lambda_matrix_loop(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G1_prime_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP G2_prime_prime_xeSEXP, SEXP densitySEXP, SEXP include_misspecification_termsSEXP, SEXP alphaSEXP) {
+arma::mat lambda_matrix_loop(arma::mat xq, arma::mat xe, arma::vec xbq, arma::vec xbe, arma::vec G1_prime_xq, arma::vec G1_prime_prime_xq, arma::vec G2_xe, arma::vec G2_prime_xe, arma::vec G2_prime_prime_xe, arma::vec density, arma::vec cdf, bool include_misspecification_terms, double alpha);
+RcppExport SEXP _esreg_lambda_matrix_loop(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G1_prime_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP G2_prime_prime_xeSEXP, SEXP densitySEXP, SEXP cdfSEXP, SEXP include_misspecification_termsSEXP, SEXP alphaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,9 +42,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type G2_prime_xe(G2_prime_xeSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type G2_prime_prime_xe(G2_prime_prime_xeSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type density(densitySEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type cdf(cdfSEXP);
     Rcpp::traits::input_parameter< bool >::type include_misspecification_terms(include_misspecification_termsSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
-    rcpp_result_gen = Rcpp::wrap(lambda_matrix_loop(xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, include_misspecification_terms, alpha));
+    rcpp_result_gen = Rcpp::wrap(lambda_matrix_loop(xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, cdf, include_misspecification_terms, alpha));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -203,7 +204,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_esreg_l_esreg_covariance", (DL_FUNC) &_esreg_l_esreg_covariance, 10},
-    {"_esreg_lambda_matrix_loop", (DL_FUNC) &_esreg_lambda_matrix_loop, 12},
+    {"_esreg_lambda_matrix_loop", (DL_FUNC) &_esreg_lambda_matrix_loop, 13},
     {"_esreg_sigma_matrix_calculcated", (DL_FUNC) &_esreg_sigma_matrix_calculcated, 9},
     {"_esreg_estimating_function_loop", (DL_FUNC) &_esreg_estimating_function_loop, 9},
     {"_esreg_G1_fun", (DL_FUNC) &_esreg_G1_fun, 2},
