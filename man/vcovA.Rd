@@ -23,7 +23,6 @@ vcovA(object, sigma_est = "OPG-HAC", sparsity = "nid",
 \itemize{
   \item iid - Piecewise linear interpolation of the distribution
   \item nid - Hendricks and Koenker sandwich
-  \item indicator - TBA
 }}
 
 \item{misspec}{if TRUE, the estimator accounts for potential misspecification in the model, see TBA}

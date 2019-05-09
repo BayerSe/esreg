@@ -314,7 +314,6 @@ vcov.esreg <- function(object, method='asymptotic', ...) {
 #'   \itemize{
 #'     \item iid - Piecewise linear interpolation of the distribution
 #'     \item nid - Hendricks and Koenker sandwich
-#'     \item indicator - TBA
 #'   }
 #' @param bandwidth_estimator The bandwidth estimator to be used for the iid and nid sparsity estimator, see \link{density_quantile_function}
 #'  \itemize{
@@ -539,8 +538,8 @@ sigma_matrix <- function(object, sigma_est = 'OPG-HAC') {
 #' @inheritParams vcovA
 #' @export
 lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
-  if(!(sparsity %in% c("iid", "nid", "indicator")))
-    stop("sparsity can be iid, nid or indicator")
+  if(!(sparsity %in% c("iid", "nid")))
+    stop("sparsity can be iid or nid")
   if(!(bandwidth_estimator %in% c("Bofinger", "Chamberlain", "Hall-Sheather")))
     stop("bandwidth_estimator can be Bofinger, Chamberlain or Hall-Sheather")
 
@@ -582,15 +581,10 @@ lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
   # }
 
   # Density quantile function
-  if (sparsity %in% c('iid', 'nid')) {
-    dens <- density_quantile_function(
-      y = y, x = xq, u = uq, alpha = object$alpha,
-      sparsity = sparsity, bandwidth_estimator = bandwidth_estimator
-    )
-  } else if (sparsity == 'indicator') {
-    ct <- n^(-1/3)
-    dens <- (abs(uq) <= ct) / (2*ct)
-  }
+  dens <- density_quantile_function(
+    y = y, x = xq, u = uq, alpha = object$alpha,
+    sparsity = sparsity, bandwidth_estimator = bandwidth_estimator
+  )
 
   # Compute lambda
   lambda <- lambda_matrix_loop(

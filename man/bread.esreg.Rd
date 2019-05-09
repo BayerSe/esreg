@@ -14,7 +14,6 @@
 \itemize{
   \item iid - Piecewise linear interpolation of the distribution
   \item nid - Hendricks and Koenker sandwich
-  \item indicator - TBA
 }}
 
 \item{bandwidth_estimator}{The bandwidth estimator to be used for the iid and nid sparsity estimator, see \link{density_quantile_function}
