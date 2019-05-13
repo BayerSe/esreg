@@ -506,7 +506,7 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
 bread.esreg <- function(x, sparsity = 'nid', bandwidth_estimator = 'Hall-Sheather', misspec = TRUE, ...) {
   chkDots(...)
   lambda <- lambda_matrix(x, sparsity = sparsity, bandwidth_estimator = bandwidth_estimator, misspec = misspec)
-  bread <- chol2inv(chol(lambda))
+  bread <- solve(lambda)
 
   bread
 }
