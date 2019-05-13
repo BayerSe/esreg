@@ -334,7 +334,7 @@ vcovA <- function(object, sigma_est = 'OPG-HAC', sparsity = 'nid', misspec = TRU
   } else if (sigma_est == 'OPG-HAC') {
     meat <- function(x) sandwich::meatHAC(x)
   } else if (sigma_est %in% c('ind', 'scl_N', 'scl_sp')) {
-    meat <- function(x) sigma_matrix_scaling(x, sigma_est = sigma_est)
+    meat <- function(x) sigma_matrix_scaling(x, sigma_est = sigma_est, misspec = misspec)
   } else {
     stop('This meat estimator is not supported!')
   }
@@ -518,13 +518,13 @@ bread.esreg <- function(x, sparsity = 'nid', bandwidth_estimator = 'Hall-Sheathe
 #'
 #' @inheritParams vcovA
 #' @export
-sigma_matrix <- function(object, sigma_est = 'OPG-HAC') {
+sigma_matrix <- function(object, sigma_est = 'OPG-HAC', misspec = FALSE) {
   if (sigma_est == 'OPG') {
     meat <- sandwich::meat(object)
   } else if (sigma_est == 'OPG-HAC') {
     meat <- sandwich::meatHAC(object)
   } else if (sigma_est %in% c('ind', 'scl_N', 'scl_sp')) {
-    meat <- sigma_matrix_scaling(object, sigma_est = sigma_est)
+    meat <- sigma_matrix_scaling(object, sigma_est = sigma_est, misspec = misspec)
   } else {
     stop('This meat estimator is not supported!')
   }
@@ -574,11 +574,11 @@ lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
   G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
   G2_prime_prime_xe <- G_vec(z = xbe, g = "G2_prime_prime", type = object$g2)
 
-  # # Check the methods in case of sample quantile / es
-  # if ((kq == 1) & (ke == 1) & sparsity != "iid") {
-  #   warning("Changed sparsity estimation to iid!")
-  #   sparsity <- "iid"
-  # }
+  # Check the methods in case of sample quantile / es
+  if ((kq == 1) & (ke == 1) & sparsity != "iid") {
+    warning("Changed sparsity estimation to iid!")
+    sparsity <- "iid"
+  }
 
   # Density quantile function
   dens <- density_quantile_function(
@@ -601,7 +601,7 @@ lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
 
 #' Estimate the sigma matrix (the meat in the sandwich) using the scaling estimator.
 #' @keywords internal
-sigma_matrix_scaling <- function(object, sigma_est) {
+sigma_matrix_scaling <- function(object, sigma_est, misspec) {
   if(!(sigma_est %in% c("ind", "scl_N", "scl_sp")))
     stop("sigma_estimator can be ind, scl_N or scl_sp")
 
@@ -635,19 +635,21 @@ sigma_matrix_scaling <- function(object, sigma_est) {
   G2_prime_xe <- G_vec(z = xbe, g = "G2_prime", type = object$g2)
   G2_prime_prime_xe <- G_vec(z = xbe, g = "G2_prime_prime", type = object$g2)
 
-  # # Check the methods in case of sample quantile / es
-  # if ((kq == 1) & (ke == 1) & sigma_est != "ind") {
-  #   warning("Changed conditional truncated variance estimation to ind!")
-  #   estimator <- "ind"
-  # }
+  # Check the methods in case of sample quantile / es
+  if ((kq == 1) & (ke == 1) & sigma_est != "ind") {
+    warning("Changed conditional truncated variance estimation to ind!")
+    estimator <- "ind"
+  }
 
   # Compute sigma
   cv <- conditional_truncated_variance(y = uq, x = xq, approach = sigma_est)
+  cdf <- cdf_at_quantile(y = y, x = xq, q = xbq)
   sigma <- sigma_matrix_calculcated(
     xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = alpha,
     G1_prime_xq = G1_prime_xq,
     G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
-    conditional_variance = cv)
+    conditional_variance = cv, cdf = cdf,
+    include_misspecification_terms = misspec)
 
   sigma
 }

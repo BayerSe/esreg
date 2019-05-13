@@ -4,7 +4,7 @@
 \alias{sigma_matrix}
 \title{Sigma Matrix ("meat")}
 \usage{
-sigma_matrix(object, sigma_est = "OPG-HAC")
+sigma_matrix(object, sigma_est = "OPG-HAC", misspec = FALSE)
 }
 \arguments{
 \item{object}{An esreg object}
@@ -17,6 +17,8 @@ sigma_matrix(object, sigma_est = "OPG-HAC")
   \item OPG - outer product of the estimating functions (see \link[sandwich]{meat})
   \item OPG-HAC - HAC version of the outer product of the estimating functions (see \link[sandwich]{meatHAC})
   }}
+
+\item{misspec}{if TRUE, the estimator accounts for potential misspecification in the model, see TBA}
 }
 \description{
 Estimate the sigma matrix (the meat in the sandwich).

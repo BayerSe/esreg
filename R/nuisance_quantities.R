@@ -120,6 +120,13 @@ conditional_truncated_variance <- function(y, x, approach) {
   cv
 }
 
+#' @title Cummulative Density Function at Quantile
+#' @description Returns the cummulative density function evaluated at quantile predictions.
+#' For a correctly specified model this should yield a value close to the quantile level.
+#' @param y Vector of dependent data
+#' @param x Matrix of covariates including the intercept
+#' @param q Vector of quantile predictions
+#' @keywords internal
 #' @export
 cdf_at_quantile <- function(y, x, q) {
   # Get conditional mean and sigma
@@ -128,13 +135,18 @@ cdf_at_quantile <- function(y, x, q) {
   sigma <- mu_sigma$sigma
 
   # Empirical CDF of standardized data
-  cdf <- function(x) ecdf((y - mu) / sigma)(x)
+  cdf <- function(x) stats::ecdf((y - mu) / sigma)(x)
 
   # CDF of standardized quantile predictions
   z <- (q - mu) / sigma
   cdf(z)
 }
 
+#' @title Conditional Mean and Sigma
+#' @description Estimate the conditional mean and sigma of the dependent data conditional on covariates x
+#' @param y Vector of dependent data
+#' @param x Matrix of covariates including the intercept
+#' @keywords internal
 #' @export
 conditional_mean_sigma <- function(y, x) {
   # Starting values and ensure positive fitted standard deviations

@@ -8,7 +8,7 @@ arma::mat lambda_matrix_loop(
     arma::vec G1_prime_xq, arma::vec G1_prime_prime_xq,
     arma::vec G2_xe, arma::vec G2_prime_xe, arma::vec G2_prime_prime_xe,
     arma::vec density, arma::vec cdf,
-    bool include_misspecification_terms, double alpha) {
+    double alpha, bool include_misspecification_terms) {
   int n = xq.n_rows;
   int kq = xq.n_cols;
   int ke = xe.n_cols;
@@ -36,7 +36,7 @@ arma::mat lambda_matrix_loop(
     if (include_misspecification_terms) {
       lambda_11 += xxq * (G1_prime_xq(i) + G2_xe(i) / alpha) * density(i) + xxq * G1_prime_prime_xq(i) * (cdfi - alpha);
       lambda_12 += xxqe * G2_prime_xe(i) * (cdfi - alpha) / alpha;
-      lambda_22 += xxe * G2_prime_xe(i) + xxe * G2_prime_prime_xe(i) *(xbei - yi * hit / alpha + xbqi * (hit - alpha) / alpha);
+      lambda_22 += xxe * G2_prime_xe(i) + xxe * G2_prime_prime_xe(i) * xbqi * (cdfi - alpha) / alpha;
     } else {
       lambda_11 += xxq * (G1_prime_xq(i) + G2_xe(i) / alpha) * density(i);
       lambda_22 += xxe * G2_prime_xe(i);
@@ -57,7 +57,8 @@ arma::mat lambda_matrix_loop(
 arma::mat sigma_matrix_calculcated(
     arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe,
     arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe,
-    arma::colvec conditional_variance, double alpha) {
+    arma::colvec conditional_variance, arma::vec cdf,
+    double alpha, bool include_misspecification_terms) {
   int n = xq.n_rows;
   int kq = xq.n_cols;
   int ke = xe.n_cols;
@@ -67,7 +68,8 @@ arma::mat sigma_matrix_calculcated(
   arma::mat sigma_12 = arma::zeros<arma::mat>(ke, kq);
   arma::mat sigma_22 = arma::zeros<arma::mat>(ke, ke);
   arma::mat sigma = arma::zeros<arma::mat>(kq+ke, kq+ke);
-  arma::mat xqi, xei, xxq, xxe, xxeq;
+  arma::mat xqi, xei, xxq, xxe, xxeq, _sigma_11, _sigma_12, _sigma_22;
+  double xbqi, xbei, cdfi;
 
   // Compute the matrix elements
   for (int i = 0; i < n; i++) {
@@ -76,12 +78,32 @@ arma::mat sigma_matrix_calculcated(
     xxq = xqi.t() * xqi;
     xxe = xei.t() * xei;
     xxeq = xei.t() * xqi;
+    xbqi = xbq(i);
+    xbei = xbe(i);
+    cdfi = cdf(i);
 
-    sigma_11 += (1-alpha)/alpha * xxq * pow(alpha*G1_prime_xq(i) + G2_xe(i), 2);
-    sigma_12 += (1-alpha)/alpha * xxeq * (xbq(i) - xbe(i)) *
-      (alpha*G1_prime_xq(i) + G2_xe(i)) * G2_prime_xe(i);
-    sigma_22 += xxe * pow(G2_prime_xe(i), 2) * (conditional_variance(i)/alpha +
-      (1-alpha)/alpha * pow(xbq(i) - xbe(i), 2));
+    _sigma_11 = xxq * pow(alpha*G1_prime_xq(i) + G2_xe(i), 2);
+    _sigma_12 = xxeq * (alpha*G1_prime_xq(i) + G2_xe(i)) * G2_prime_xe(i);
+    _sigma_22 = xxe * pow(G2_prime_xe(i), 2);
+
+    if (include_misspecification_terms) {
+      sigma_11 +=
+        _sigma_11 * (1-alpha)/alpha +
+        _sigma_11 * (1 - 2*alpha) * (cdfi - alpha) / pow(alpha, 2);
+      sigma_12 +=
+        _sigma_12 * (1-alpha)/alpha * (xbqi - xbei) +
+        _sigma_12 * ((1-alpha)/alpha * xbqi * (cdfi-alpha)/alpha - (cdfi-alpha)/alpha * (xbqi - xbei));
+      sigma_22 +=
+        _sigma_22 * (conditional_variance(i)/alpha + (1-alpha)/alpha * pow(xbqi - xbei, 2)) +
+        _sigma_22 * 2 * (xbqi - xbei) * xbqi * (alpha - cdfi) / alpha;
+    } else {
+      sigma_11 += _sigma_11 *
+        (1-alpha)/alpha;
+      sigma_12 += _sigma_12 *
+        (1-alpha)/alpha * (xbqi - xbei);
+      sigma_22 += _sigma_22 *
+        (conditional_variance(i)/alpha + (1-alpha)/alpha * pow(xbqi - xbei, 2));
+    }
   }
 
   // Fill the matrices

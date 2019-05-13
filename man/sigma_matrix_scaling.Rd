@@ -4,7 +4,7 @@
 \alias{sigma_matrix_scaling}
 \title{Estimate the sigma matrix (the meat in the sandwich) using the scaling estimator.}
 \usage{
-sigma_matrix_scaling(object, sigma_est)
+sigma_matrix_scaling(object, sigma_est, misspec)
 }
 \description{
 Estimate the sigma matrix (the meat in the sandwich) using the scaling estimator.

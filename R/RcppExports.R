@@ -7,13 +7,13 @@ l_esreg_covariance <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe
 }
 
 #' @keywords internal
-lambda_matrix_loop <- function(xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, cdf, include_misspecification_terms, alpha) {
-    .Call('_esreg_lambda_matrix_loop', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, cdf, include_misspecification_terms, alpha)
+lambda_matrix_loop <- function(xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, cdf, alpha, include_misspecification_terms) {
+    .Call('_esreg_lambda_matrix_loop', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq, G2_xe, G2_prime_xe, G2_prime_prime_xe, density, cdf, alpha, include_misspecification_terms)
 }
 
 #' @keywords internal
-sigma_matrix_calculcated <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, alpha) {
-    .Call('_esreg_sigma_matrix_calculcated', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, alpha)
+sigma_matrix_calculcated <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, cdf, alpha, include_misspecification_terms) {
+    .Call('_esreg_sigma_matrix_calculcated', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, cdf, alpha, include_misspecification_terms)
 }
 
 #' @keywords internal
