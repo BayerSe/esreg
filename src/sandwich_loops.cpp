@@ -54,7 +54,7 @@ arma::mat lambda_matrix_loop(
 
 //' @keywords internal
 // [[Rcpp::export]]
-arma::mat sigma_matrix_calculcated(
+arma::mat sigma_matrix_loop(
     arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe,
     arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe,
     arma::colvec conditional_variance, arma::vec cdf,

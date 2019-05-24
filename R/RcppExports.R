@@ -12,8 +12,8 @@ lambda_matrix_loop <- function(xq, xe, xbq, xbe, G1_prime_xq, G1_prime_prime_xq,
 }
 
 #' @keywords internal
-sigma_matrix_calculcated <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, cdf, alpha, include_misspecification_terms) {
-    .Call('_esreg_sigma_matrix_calculcated', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, cdf, alpha, include_misspecification_terms)
+sigma_matrix_loop <- function(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, cdf, alpha, include_misspecification_terms) {
+    .Call('_esreg_sigma_matrix_loop', PACKAGE = 'esreg', xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, cdf, alpha, include_misspecification_terms)
 }
 
 #' @keywords internal

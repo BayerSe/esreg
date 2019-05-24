@@ -49,9 +49,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sigma_matrix_calculcated
-arma::mat sigma_matrix_calculcated(arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec conditional_variance, arma::vec cdf, double alpha, bool include_misspecification_terms);
-RcppExport SEXP _esreg_sigma_matrix_calculcated(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP conditional_varianceSEXP, SEXP cdfSEXP, SEXP alphaSEXP, SEXP include_misspecification_termsSEXP) {
+// sigma_matrix_loop
+arma::mat sigma_matrix_loop(arma::mat xq, arma::mat xe, arma::colvec xbq, arma::colvec xbe, arma::colvec G1_prime_xq, arma::colvec G2_xe, arma::colvec G2_prime_xe, arma::colvec conditional_variance, arma::vec cdf, double alpha, bool include_misspecification_terms);
+RcppExport SEXP _esreg_sigma_matrix_loop(SEXP xqSEXP, SEXP xeSEXP, SEXP xbqSEXP, SEXP xbeSEXP, SEXP G1_prime_xqSEXP, SEXP G2_xeSEXP, SEXP G2_prime_xeSEXP, SEXP conditional_varianceSEXP, SEXP cdfSEXP, SEXP alphaSEXP, SEXP include_misspecification_termsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -66,7 +66,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type cdf(cdfSEXP);
     Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
     Rcpp::traits::input_parameter< bool >::type include_misspecification_terms(include_misspecification_termsSEXP);
-    rcpp_result_gen = Rcpp::wrap(sigma_matrix_calculcated(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, cdf, alpha, include_misspecification_terms));
+    rcpp_result_gen = Rcpp::wrap(sigma_matrix_loop(xq, xe, xbq, xbe, G1_prime_xq, G2_xe, G2_prime_xe, conditional_variance, cdf, alpha, include_misspecification_terms));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -207,7 +207,7 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_esreg_l_esreg_covariance", (DL_FUNC) &_esreg_l_esreg_covariance, 10},
     {"_esreg_lambda_matrix_loop", (DL_FUNC) &_esreg_lambda_matrix_loop, 13},
-    {"_esreg_sigma_matrix_calculcated", (DL_FUNC) &_esreg_sigma_matrix_calculcated, 11},
+    {"_esreg_sigma_matrix_loop", (DL_FUNC) &_esreg_sigma_matrix_loop, 11},
     {"_esreg_estimating_function_loop", (DL_FUNC) &_esreg_estimating_function_loop, 9},
     {"_esreg_G1_fun", (DL_FUNC) &_esreg_G1_fun, 2},
     {"_esreg_G1_prime_fun", (DL_FUNC) &_esreg_G1_prime_fun, 2},

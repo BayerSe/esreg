@@ -519,10 +519,8 @@ lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
   }
 
   # Density quantile function
-  dens <- density_quantile_function(
-    y = y, x = xq, u = uq, alpha = object$alpha,
-    sparsity = sparsity, bandwidth_estimator = bandwidth_estimator
-  )
+  dens <- density_quantile_function(y = y, x = xq, u = uq, alpha = object$alpha,
+                                    sparsity = sparsity, bandwidth_estimator = bandwidth_estimator)
 
   # Conditional CDF evaluated at conditional quantile
   cdf <- cdf_at_quantile(y = y, x = xq, q = xbq)
@@ -580,13 +578,17 @@ sigma_matrix <- function(object, sigma_est, misspec) {
   # Check the methods in case of sample quantile / es
   if ((kq == 1) & (ke == 1) & sigma_est != "ind") {
     warning("Changed conditional truncated variance estimation to ind!")
-    estimator <- "ind"
+    sigma_est <- "ind"
   }
 
-  # Compute sigma
+  # Estimate the (conditional) truncated variance
   cv <- conditional_truncated_variance(y = uq, x = xq, approach = sigma_est)
+
+  # Estimate the CDF at the quantile predictions
   cdf <- cdf_at_quantile(y = y, x = xq, q = xbq)
-  sigma <- sigma_matrix_calculcated(
+
+  # Compute sigma
+  sigma <- sigma_matrix_loop(
     xq = xq, xe = xe, xbq = xbq, xbe = xbe, alpha = alpha,
     G1_prime_xq = G1_prime_xq,
     G2_xe = G2_xe, G2_prime_xe = G2_prime_xe,
