@@ -2,24 +2,22 @@
 % Please edit documentation in R/esreg.R
 \name{sigma_matrix}
 \alias{sigma_matrix}
-\title{Sigma Matrix ("meat")}
+\title{Sigma Matrix}
 \usage{
-sigma_matrix(object, sigma_est = "OPG-HAC", misspec = FALSE)
+sigma_matrix(object, sigma_est, misspec)
 }
 \arguments{
 \item{object}{An esreg object}
 
-\item{sigma_est}{The estimator to be used for \eqn{\Sigma} (the meat in the sandwich)
+\item{sigma_est}{The estimator to be used for \eqn{\Sigma}, see \link{conditional_truncated_variance}
 \itemize{
-  \item ind - Variance over all negative residuals (see \link{conditional_truncated_variance})
-  \item scl_N - Scaling with the normal distribution (see \link{conditional_truncated_variance})
-  \item scl_sp - Scaling with the kernel density function (see \link{conditional_truncated_variance})
-  \item OPG - outer product of the estimating functions (see \link[sandwich]{meat})
-  \item OPG-HAC - HAC version of the outer product of the estimating functions (see \link[sandwich]{meatHAC})
+  \item ind - Variance over all negative residuals
+  \item scl_N - Scaling with the normal distribution
+  \item scl_sp - Scaling with the kernel density function
   }}
 
-\item{misspec}{if TRUE, the estimator accounts for potential misspecification in the model, see TBA}
+\item{misspec}{if TRUE, the estimator accounts for potential misspecification in the model}
 }
 \description{
-Estimate the sigma matrix (the meat in the sandwich).
+Estimate the sigma matrix.
 }

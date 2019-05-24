@@ -4,7 +4,7 @@
 \alias{estfun.esreg}
 \title{Estimating function}
 \usage{
-\method{estfun}{esreg}(x, ...)
+estfun.esreg(x, ...)
 }
 \arguments{
 \item{x}{An \link{esreg} object}
