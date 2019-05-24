@@ -1,5 +1,5 @@
 # 0.4.1
-* Add new covariance estimator
+* Account for misspecification in the covariance estimator
 
 # 0.4.0
 * Allow different covariates in the quantile and the expected shortfall regression

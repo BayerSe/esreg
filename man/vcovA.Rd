@@ -4,28 +4,26 @@
 \alias{vcovA}
 \title{Asymptotic Covariance Estimation}
 \usage{
-vcovA(object, sigma_est = "OPG-HAC", sparsity = "nid",
-  misspec = TRUE, bandwidth_estimator = "Hall-Sheather")
+vcovA(object, sigma_est = "scl_sp", sparsity = "nid", misspec = TRUE,
+  bandwidth_estimator = "Hall-Sheather")
 }
 \arguments{
 \item{object}{An esreg object}
 
-\item{sigma_est}{The estimator to be used for \eqn{\Sigma} (the meat in the sandwich)
+\item{sigma_est}{The estimator to be used for \eqn{\Sigma}, see \link{conditional_truncated_variance}
 \itemize{
-  \item ind - Variance over all negative residuals (see \link{conditional_truncated_variance})
-  \item scl_N - Scaling with the normal distribution (see \link{conditional_truncated_variance})
-  \item scl_sp - Scaling with the kernel density function (see \link{conditional_truncated_variance})
-  \item OPG - outer product of the estimating functions (see \link[sandwich]{meat})
-  \item OPG-HAC - HAC version of the outer product of the estimating functions (see \link[sandwich]{meatHAC})
+  \item ind - Variance over all negative residuals
+  \item scl_N - Scaling with the normal distribution
+  \item scl_sp - Scaling with the kernel density function
   }}
 
-\item{sparsity}{The estimator to be used for the sparsity in \eqn{\Lambda} (the bread in the sandwich), see \link{density_quantile_function}
+\item{sparsity}{The estimator to be used for the sparsity in \eqn{\Lambda}, see \link{density_quantile_function}
 \itemize{
   \item iid - Piecewise linear interpolation of the distribution
   \item nid - Hendricks and Koenker sandwich
 }}
 
-\item{misspec}{if TRUE, the estimator accounts for potential misspecification in the model, see TBA}
+\item{misspec}{if TRUE, the estimator accounts for potential misspecification in the model}
 
 \item{bandwidth_estimator}{The bandwidth estimator to be used for the iid and nid sparsity estimator, see \link{density_quantile_function}
 \itemize{

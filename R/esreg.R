@@ -36,17 +36,13 @@
 #' cov1 <- vcov(object=fit, sparsity="iid", sigma_est="ind")
 #' cov2 <- vcov(object=fit, sparsity="nid", sigma_est="scl_N")
 #' cov3 <- vcov(object=fit, sparsity="nid", sigma_est="scl_sp")
-#' cov4 <- vcov(object=fit, sparsity="nid", sigma_est="OPG")
-#' cov5 <- vcov(object=fit, sparsity="nid", sigma_est="OPG-HAC")
 #'
 #' print("Comparison of the variance-covariance estimators")
 #' print(cbind(Truth=true_pars,
 #'             Estimate=coef(fit),
 #'             SE_iid_ind=sqrt(diag(cov1)),
 #'             SE_nid_N=sqrt(diag(cov2)),
-#'             SE_nid_sp=sqrt(diag(cov3)),
-#'             SE_nid_OPG=sqrt(diag(cov4)),
-#'             SE_nid_HAC=sqrt(diag(cov5))))
+#'             SE_nid_sp=sqrt(diag(cov3))))
 #'
 #' # Compares estimates using different G2 functions
 #' fit1 <- esreg(y ~ x, alpha=alpha, g2=1)
@@ -123,13 +119,6 @@ esreg.default <- function(xq, xe, y, alpha, g1 = 2L, g2 = 1L,
   fit
 }
 
-#' Model Matrix
-#'
-#' Returns a n x (kq + ke) matrix with covariates in order to match \link{estfun.esreg}
-#' and its use in \link[sandwich]{meatHAC}.
-#'
-#' @param object An \link{esreg} object
-#' @param ... Further arguments (does not apply here)
 #' @export
 model.matrix.esreg <- function(object, ...) {
   chkDots(...)
@@ -140,7 +129,6 @@ model.matrix.esreg <- function(object, ...) {
 
   mm
 }
-
 
 #' @export
 print.esreg <- function(x, digits = 4, ...) {
@@ -228,6 +216,7 @@ predict.esreg <- function(object, newdata=NULL, ...) {
 #'
 #' This function matches the \link[sandwich]{estfun} function of the sandwich package and
 #' returns the estimating functions for the fitted model.
+#' It can for instance be used for an OPG estimator of the sigma matrix.
 #' For esreg, the dimension of the estimating functions is n x (kq + ke).
 #'
 #' @param x An \link{esreg} object
@@ -302,15 +291,13 @@ vcov.esreg <- function(object, method='asymptotic', ...) {
 #' possible misspecifications in the underlying data.
 #'
 #' @param object An esreg object
-#' @param sigma_est The estimator to be used for \eqn{\Sigma} (the meat in the sandwich)
+#' @param sigma_est The estimator to be used for \eqn{\Sigma}, see \link{conditional_truncated_variance}
 #'   \itemize{
-#'     \item ind - Variance over all negative residuals (see \link{conditional_truncated_variance})
-#'     \item scl_N - Scaling with the normal distribution (see \link{conditional_truncated_variance})
-#'     \item scl_sp - Scaling with the kernel density function (see \link{conditional_truncated_variance})
-#'     \item OPG - outer product of the estimating functions (see \link[sandwich]{meat})
-#'     \item OPG-HAC - HAC version of the outer product of the estimating functions (see \link[sandwich]{meatHAC})
+#'     \item ind - Variance over all negative residuals
+#'     \item scl_N - Scaling with the normal distribution
+#'     \item scl_sp - Scaling with the kernel density function
 #'     }
-#' @param sparsity The estimator to be used for the sparsity in \eqn{\Lambda} (the bread in the sandwich), see \link{density_quantile_function}
+#' @param sparsity The estimator to be used for the sparsity in \eqn{\Lambda}, see \link{density_quantile_function}
 #'   \itemize{
 #'     \item iid - Piecewise linear interpolation of the distribution
 #'     \item nid - Hendricks and Koenker sandwich
@@ -321,26 +308,15 @@ vcov.esreg <- function(object, method='asymptotic', ...) {
 #'    \item Chamberlain
 #'    \item Hall-Sheather
 #'  }
-#' @param misspec if TRUE, the estimator accounts for potential misspecification in the model, see TBA
+#' @param misspec if TRUE, the estimator accounts for potential misspecification in the model
 #' @export
-vcovA <- function(object, sigma_est = 'OPG-HAC', sparsity = 'nid', misspec = TRUE, bandwidth_estimator = 'Hall-Sheather') {
-
-  bread <- function(object) {
-    sandwich::bread(object, sparsity = sparsity, bandwidth_estimator = bandwidth_estimator, misspec = misspec)
-  }
-
-  if (sigma_est == 'OPG') {
-    meat <- function(x) sandwich::meat(x)
-  } else if (sigma_est == 'OPG-HAC') {
-    meat <- function(x) sandwich::meatHAC(x)
-  } else if (sigma_est %in% c('ind', 'scl_N', 'scl_sp')) {
-    meat <- function(x) sigma_matrix_scaling(x, sigma_est = sigma_est, misspec = misspec)
-  } else {
-    stop('This meat estimator is not supported!')
-  }
-
-  cov <- sandwich::sandwich(object, bread. = bread, meat. = meat)
-
+vcovA <- function(object, sigma_est = 'scl_sp', sparsity = 'nid', misspec = TRUE, bandwidth_estimator = 'Hall-Sheather') {
+  lambda <- lambda_matrix(object = object, sparsity = sparsity,
+                          bandwidth_estimator = bandwidth_estimator, misspec = misspec)
+  lambda_inverse <- solve(lambda)
+  sigma <- sigma_matrix(object = object, sigma_est = sigma_est, misspec = misspec)
+  n <- length(object$y)
+  cov <- 1/n * (lambda_inverse %*% sigma %*% lambda_inverse)
   rownames(cov) <- colnames(cov) <- names(stats::coef(object))
   cov
 }
@@ -493,47 +469,9 @@ esreg.fit <- function(xq, xe, y, alpha, g1, g2, early_stopping) {
   revtal
 }
 
-#' Bread in the sandwich
-#'
-#' The bread in the sandwich, i.e. the inverse of \eqn{\Lambda}, for more details see \link{lambda_matrix}.
-#' This function is added for compatibility with the sandwich package.
-#'
-#' @param x An \link{esreg} object
-#' @param ... Further arguments (does not apply here)
-#' @inheritParams vcovA
-#' @import sandwich
-#' @export
-bread.esreg <- function(x, sparsity = 'nid', bandwidth_estimator = 'Hall-Sheather', misspec = TRUE, ...) {
-  chkDots(...)
-  lambda <- lambda_matrix(x, sparsity = sparsity, bandwidth_estimator = bandwidth_estimator, misspec = misspec)
-  bread <- solve(lambda)
-
-  bread
-}
-
-
-#' Sigma Matrix ("meat")
-#'
-#' Estimate the sigma matrix (the meat in the sandwich).
-#'
-#' @inheritParams vcovA
-#' @export
-sigma_matrix <- function(object, sigma_est = 'OPG-HAC', misspec = FALSE) {
-  if (sigma_est == 'OPG') {
-    meat <- sandwich::meat(object)
-  } else if (sigma_est == 'OPG-HAC') {
-    meat <- sandwich::meatHAC(object)
-  } else if (sigma_est %in% c('ind', 'scl_N', 'scl_sp')) {
-    meat <- sigma_matrix_scaling(object, sigma_est = sigma_est, misspec = misspec)
-  } else {
-    stop('This meat estimator is not supported!')
-  }
-  meat
-}
-
 #' Lambda Matrix
 #'
-#' Estimate the lambda matrix (inverse of the bread in the sandwich).
+#' Estimate the lambda matrix.
 #'
 #' @inheritParams vcovA
 #' @export
@@ -599,9 +537,13 @@ lambda_matrix <- function(object, sparsity, bandwidth_estimator, misspec) {
   lambda
 }
 
-#' Estimate the sigma matrix (the meat in the sandwich) using the scaling estimator.
-#' @keywords internal
-sigma_matrix_scaling <- function(object, sigma_est, misspec) {
+#' Sigma Matrix
+#'
+#' Estimate the sigma matrix.
+#'
+#' @inheritParams vcovA
+#' @export
+sigma_matrix <- function(object, sigma_est, misspec) {
   if(!(sigma_est %in% c("ind", "scl_N", "scl_sp")))
     stop("sigma_estimator can be ind, scl_N or scl_sp")
 
