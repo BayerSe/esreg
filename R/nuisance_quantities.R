@@ -120,8 +120,8 @@ conditional_truncated_variance <- function(y, x, approach) {
   cv
 }
 
-#' @title Cummulative Density Function at Quantile
-#' @description Returns the cummulative density function evaluated at quantile predictions.
+#' @title Cumulative Density Function at Quantile
+#' @description Returns the cumulative density function evaluated at quantile predictions.
 #' For a correctly specified model this should yield a value close to the quantile level.
 #' @param y Vector of dependent data
 #' @param x Matrix of covariates including the intercept
