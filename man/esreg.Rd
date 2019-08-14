@@ -60,12 +60,12 @@ true_pars <- c(-1.959964, -1.979982, -2.337803, -2.168901)
 fit <- esreg(y ~ x, alpha=alpha)
 
 # Compare the different variance-covariance estimators
-cov1 <- vcov(object=fit, sparsity="iid", cond_var="ind")
-cov2 <- vcov(object=fit, sparsity="nid", cond_var="scl_N")
-cov3 <- vcov(object=fit, sparsity="nid", cond_var="scl_sp")
+cov1 <- vcov(object=fit, sparsity="iid", sigma_est="ind")
+cov2 <- vcov(object=fit, sparsity="nid", sigma_est="scl_N")
+cov3 <- vcov(object=fit, sparsity="nid", sigma_est="scl_sp")
 
 print("Comparison of the variance-covariance estimators")
-print(rbind(Truth=true_pars,
+print(cbind(Truth=true_pars,
             Estimate=coef(fit),
             SE_iid_ind=sqrt(diag(cov1)),
             SE_nid_N=sqrt(diag(cov2)),
