@@ -2,7 +2,7 @@
 % Please edit documentation in R/nuisance_quantities.R
 \name{cdf_at_quantile}
 \alias{cdf_at_quantile}
-\title{Cummulative Density Function at Quantile}
+\title{Cumulative Density Function at Quantile}
 \usage{
 cdf_at_quantile(y, x, q)
 }
@@ -14,7 +14,7 @@ cdf_at_quantile(y, x, q)
 \item{q}{Vector of quantile predictions}
 }
 \description{
-Returns the cummulative density function evaluated at quantile predictions.
+Returns the cumulative density function evaluated at quantile predictions.
 For a correctly specified model this should yield a value close to the quantile level.
 }
 \keyword{internal}
