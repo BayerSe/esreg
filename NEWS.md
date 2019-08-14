@@ -1,5 +1,6 @@
 # 0.4.1
 * Account for misspecification in the covariance estimator
+* Include information on published paper
 
 # 0.4.0
 * Allow different covariates in the quantile and the expected shortfall regression
