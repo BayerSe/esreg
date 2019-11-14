@@ -1,12 +1,16 @@
 ## Test environments
-* Arch and RHEL 7.4, R 3.5.2
+* local Arch Linux install, R 3.6.1
 * win-builder (devel and release)
 * r-hub
 
 ## R CMD check results
+There were no ERRORs or WARNINGs. 
 
-0 errors | 0 warnings | 0 note
+There was 1 NOTE:
+
+* Compilation used the following non-portable flag(s):
+    ‘-march=x86-64’
 
 ## Downstream dependencies
 
-There are currently no downstream dependencies for this package
+There are currently no downstream dependencies for this package.
