@@ -1,4 +1,4 @@
-# 0.4.1
+# 0.5.0
 * Account for misspecification in the covariance estimator
 * Include information on published paper
 
