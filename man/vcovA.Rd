@@ -4,8 +4,13 @@
 \alias{vcovA}
 \title{Asymptotic Covariance Estimation}
 \usage{
-vcovA(object, sigma_est = "scl_sp", sparsity = "nid", misspec = TRUE,
-  bandwidth_estimator = "Hall-Sheather")
+vcovA(
+  object,
+  sigma_est = "scl_sp",
+  sparsity = "nid",
+  misspec = TRUE,
+  bandwidth_estimator = "Hall-Sheather"
+)
 }
 \arguments{
 \item{object}{An esreg object}

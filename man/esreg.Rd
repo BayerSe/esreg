@@ -8,11 +8,17 @@
 \usage{
 esreg(...)
 
-\method{esreg}{formula}(formula, data = parent.frame(), alpha, g1 = 2L,
-  g2 = 1L, early_stopping = 10, ...)
+\method{esreg}{formula}(
+  formula,
+  data = parent.frame(),
+  alpha,
+  g1 = 2L,
+  g2 = 1L,
+  early_stopping = 10,
+  ...
+)
 
-\method{esreg}{default}(xq, xe, y, alpha, g1 = 2L, g2 = 1L,
-  early_stopping = 10, ...)
+\method{esreg}{default}(xq, xe, y, alpha, g1 = 2L, g2 = 1L, early_stopping = 10, ...)
 }
 \arguments{
 \item{...}{Further arguments (does not apply here)}

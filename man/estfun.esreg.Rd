@@ -12,7 +12,7 @@ estfun.esreg(x, ...)
 \item{...}{Further arguments (does not apply here)}
 }
 \description{
-This function matches the \link[sandwich]{estfun} function of the sandwich package and
+This function matches the estfun function of the sandwich package and
 returns the estimating functions for the fitted model.
 It can for instance be used for an OPG estimator of the sigma matrix.
 For esreg, the dimension of the estimating functions is n x (kq + ke).
