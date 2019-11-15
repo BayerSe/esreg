@@ -8,7 +8,7 @@ Authors@R: c(person('Sebastian', 'Bayer', email='sebastian.bayer@uni-konstanz.de
 Description: 
     Simultaneous modeling of the quantile and the expected shortfall of a response variable given 
     a set of covariates, see Dimitriadis and Bayer (2019) <doi:10.1214/19-EJS1560>.
-License: GPL-3 + file LICENSE
+License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: 
