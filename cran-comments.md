@@ -1,5 +1,5 @@
 ## Test environments
-* local Arch Linux install, R 3.6.1
+* local Arch Linux install, R 4.1.3
 * win-builder (devel and release)
 * r-hub
 
@@ -8,9 +8,10 @@ There were no ERRORs or WARNINGs.
 
 There was 1 NOTE:
 
-* Compilation used the following non-portable flag(s):
-    ‘-march=x86-64’
+* Compilation used the following non-portable flag(s): 
+   ‘-Werror=format-security’ ‘-Wformat’ ‘-Wp,-D_FORTIFY_SOURCE=2’ 
+   ‘-Wp,-D_GLIBCXX_ASSERTIONS’ ‘-march=x86-64’
 
 ## Downstream dependencies
-
-There are currently no downstream dependencies for this package.
+There is one downstream dependency of which I am the author: esback. 
+It is compatible with the current version of esreg.
