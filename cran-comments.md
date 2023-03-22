@@ -1,5 +1,5 @@
 ## Test environments
-* local Arch Linux install, R 4.1.3
+* local Arch Linux install, R 4.2.3
 * win-builder (devel and release)
 * r-hub
 
@@ -8,9 +8,9 @@ There were no ERRORs or WARNINGs.
 
 There was 1 NOTE:
 
-* Compilation used the following non-portable flag(s): 
-   ‘-Werror=format-security’ ‘-Wformat’ ‘-Wp,-D_FORTIFY_SOURCE=2’ 
-   ‘-Wp,-D_GLIBCXX_ASSERTIONS’ ‘-march=x86-64’
+Compilation used the following non-portable flag(s):
+  ‘-Werror=format-security’ ‘-Wformat’ ‘-Wp,-D_FORTIFY_SOURCE=2’
+  ‘-Wp,-D_GLIBCXX_ASSERTIONS’ ‘-march=x86-64’
 
 ## Downstream dependencies
 There is one downstream dependency of which I am the author: esback. 
