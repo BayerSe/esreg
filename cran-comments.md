@@ -1,5 +1,5 @@
 ## Test environments
-* local Arch Linux install, R 4.2.3
+* local macOS install, R 4.3.0
 * win-builder (devel and release)
 * r-hub
 
