@@ -1,5 +1,7 @@
 # esreg
 
+[![R-CMD-check](https://github.com/BayerSe/esreg/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/BayerSe/esreg/actions/workflows/R-CMD-check.yaml)
+
 The goal of esreg is to simultaneously model the quantile and the
 Expected Shortfall of a response variable given a set of covariates.
 
@@ -18,8 +20,8 @@ The latest version of the package is under development at
 [GitHub](https://github.com/BayerSe/esreg). You can install the
 development version using these commands:
 
-    install.packages("devtools")
-    devtools::install_github("BayerSe/esreg")
+    # install.packages("pak")
+    pak::pak("BayerSe/esreg")
 
 If you are using Windows, you need to install the
 [Rtools](https://cran.r-project.org/bin/windows/Rtools/) for compilation

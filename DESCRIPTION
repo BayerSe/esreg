@@ -10,6 +10,8 @@ Description:
     a set of covariates, see Dimitriadis and Bayer (2019) <doi:10.1214/19-EJS1560>.
 License: GPL-3
 Encoding: UTF-8
+URL: https://github.com/BayerSe/esreg
+BugReports: https://github.com/BayerSe/esreg/issues
 Imports: 
     quantreg,
     Rcpp,
@@ -18,4 +20,7 @@ Imports:
 LinkingTo: 
     Rcpp, 
     RcppArmadillo
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
 RoxygenNote: 7.2.3
