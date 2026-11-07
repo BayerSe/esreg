@@ -1,4 +1,4 @@
-# 0.6.2
+# 0.6.3
 - Fix bug in loss function "esr_loss".
 
 # 0.6.1
