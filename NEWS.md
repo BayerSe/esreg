@@ -1,4 +1,4 @@
-# 0.6.3
+# esreg 0.6.3
 - Fix the second derivative of G2 for type 1.
 
 # 0.6.2
