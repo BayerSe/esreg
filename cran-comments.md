@@ -1,11 +1,10 @@
-# Test environments
-* local macOS install, R 4.3.0
-* win-builder (devel and release)
-* r-hub
+## R CMD check results
 
-# R CMD check results
-There are no ERRORs or WARNINGs. 
+0 errors | 0 warnings | 1 note
 
-# Downstream dependencies
-There is one downstream dependency of which I am the author: esback. 
-It is compatible with the current version of esreg.
+## revdepcheck results
+
+We checked 1 reverse dependency, comparing R CMD check results across CRAN and dev versions of this package.
+
+We saw no problems.
+
